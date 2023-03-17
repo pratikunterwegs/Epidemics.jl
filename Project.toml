@@ -1,0 +1,13 @@
+name = "Epidemics"
+uuid = "eadb8c6d-7bfd-40d7-87f2-9e465cdd3b54"
+authors = ["Pratik Gupte <pratikgupte16@gmail.com> and contributors"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
