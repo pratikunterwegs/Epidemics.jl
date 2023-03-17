@@ -1,7 +1,12 @@
 name = "Epidemics"
 uuid = "3842d2e4-6389-40c1-b4a0-39a6a39a1f90"
-authors = ["Pratik Gupte"]
-version = "1.0.0-DEV"
+authors = ["Pratik Gupte <pratikgupte16@gmail.com> and contributors"]
+version = "0.0.9"
+
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 
 [compat]
 julia = "1.6"
