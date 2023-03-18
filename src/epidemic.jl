@@ -1,41 +1,16 @@
 
+include("helpers.jl")
 include("seir.jl")
 
 using OrdinaryDiffEq
 using DataFrames
 using LinearAlgebra
 
-function prepare_contact_matrix(;contact_matrix, demography_vector)
-    # input checking here
-    # WIP check that square matrix has as many rows as demographic groups
-
-    # scale the contact matrix by its largest real eigenvalue
-    # eigvals is assumed to return only the real eigenvalues
-    # may need correction
-    contact_matrix = contact_matrix / maximum(LinearAlgebra.eigvals(contact_matrix))
-    
-    # scale by the demography, divide each row by corresponding demography
-    contact_matrix = contact_matrix ./ demography_vector
-    
-    return contact_matrix
-end
-
-function prepare_initial_conditions(;initial_conditions, demography_vector)
-    # input checking here; check that initial initial_conditions
-    # is a matrix and has as many rows as demography_vector
-
-    # rowwise multiplication of initial conditions by demography_vector
-    init = initial_conditions .* demography_vector
-
-    # return linearised values
-    return vec(init)
-end
-
 function epidemic(;
     model_name="seir", # named arguments begin here
-    init=[1.0 - 1e-4, 1e-4, 0.0, 0.0],
+    init=[0.9 0.9 0.9; 0.09 0.09 0.09; 0.01 0.01 0.01; 0.0 0.0 0.0]',
     contact_matrix, demography_vector,
-    parameters=[0.1, 0.5, 0.05, 0.01],
+    parameters=[[0.14, 0.12, 0.2], [0.5, 0.5, 0.5], [0.05, 0.05, 0.05]],
     time_end=200.0,
     increment=0.1)
 
@@ -74,14 +49,7 @@ function epidemic(;
     # convert to dataframe
     data_output = DataFrames.DataFrame(ode_solution)
 
-    # rename dataframe columns
-    data_output = DataFrames.rename(
-        data_output,
-        Dict(
-            "value1" => "p_susceptible", "value2" => "p_exposed",
-            "value3" => "p_infected", "value4" => "p_recovered"
-        )
-    )
+    # WIP - function to handle data with correct naming
 
     return data_output
 
