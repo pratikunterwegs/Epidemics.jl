@@ -27,12 +27,12 @@ function seir!(du, u, parameters, t)
     I = contact_matrix * @view u[:, 3] # matrix mult for cm * I
     I_ = @view u[:, 3] # unmultiplied I for operations involving only I
     R = @view u[:, 4]
-    
+
     # views to the change matrix, dU
-    dS = @view du[:,1]
-    dE = @view du[:,2]
-    dI = @view du[:,3]
-    dR = @view du[:,4]
+    dS = @view du[:, 1]
+    dE = @view du[:, 2]
+    dI = @view du[:, 3]
+    dR = @view du[:, 4]
 
     # calculate change in compartment size and update the change matrix dU
     # note the use of @. for broadcasting, equivalent to .=
