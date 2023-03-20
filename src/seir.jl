@@ -2,23 +2,42 @@
     seir(du, u, p, t)
 
 A simple SEIR epidemic model function that allows for multiple demographic
-    groups. This function is intended to be called internally from [`epidemic`](@ref).
-
+    groups. This function is intended to be called internally from
+    [`epidemic`](@ref).
+    The function expects the parameters argument to be a four element vector
+    with the following elements:
+    a vector of beta, the transmission rate, where each element of the vector
+    represents the transmission rate of the pathogen within a specific
+    demographic group;
+    a vector of beta2, the group-specific rate of conversion from exposed to
+    infectious;
+    a vector of gamma, the group-specific rate of recovery;
+    a matrix specifying the contacts between demographic groups.
+    
 """
-function seir(du, u, p, t)
+function seir!(du, u, parameters, t)
     # assumes that each element of the vector is a 
     # vector of rates
-    β, β2, γ = p
+    β, β2, γ, contact_matrix = parameters
 
-    # view the values of each compartment per each age group
+    # view the values of each compartment per age group
+    # rows represent age groups, epi compartments are columns
     S = @view u[:, 1]
     E = @view u[:, 2]
-    I = @view u[:, 3]
+    I = contact_matrix * @view u[:, 3] # matrix mult for cm * I
+    I_ = @view u[:, 3] # unmultiplied I for operations involving only I
     R = @view u[:, 4]
+    
+    # views to the change matrix, dU
+    dS = @view du[:,1]
+    dE = @view du[:,2]
+    dI = @view du[:,3]
+    dR = @view du[:,4]
 
-    # calculate change in compartment size
-    @. du[:, 1] = -β .* S .* I
-    @. du[:, 2] = β * S * I - (β2 * E)
-    @. du[:, 3] = β2 * E - γ * I
-    @. du[:, 4] = γ * I
+    # calculate change in compartment size and update the change matrix dU
+    # note the use of @. for broadcasting, equivalent to .=
+    @. dS = -β * S * I # contact matrix cannot be multiplied here due to @.?
+    @. dE = β * S * I - β2 * E
+    @. dI = β2 * E - (γ * I_) # note use of I_
+    @. dR = γ * I_
 end
