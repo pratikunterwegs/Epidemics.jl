@@ -1,6 +1,6 @@
 using DataFrames
 
-function prepare_data!(; ode_solution_df, n_age_groups=3,
+function prepare_data(; ode_solution_df, n_age_groups=3,
     compartment_names=["susceptible", "exposed", "infectious", "recovered"])
 
     # input checking here
@@ -43,5 +43,6 @@ function prepare_data!(; ode_solution_df, n_age_groups=3,
     )
     DataFrames.select!(ode_solution_df, Not([:variable]))
 
-    # no return type as the function modifies in place
+    # return reshaped and renamed data
+    return ode_solution_df
 end
