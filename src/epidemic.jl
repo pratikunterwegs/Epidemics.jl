@@ -1,16 +1,21 @@
 
 include("helpers.jl")
 include("seir.jl")
+include("prepare_data.jl")
 
-using OrdinaryDiffEq
-using DataFrames
-using LinearAlgebra
 
 function epidemic(;
     model_name="seir", # named arguments begin here
-    init=[0.9 0.9 0.9; 0.09 0.09 0.09; 0.01 0.01 0.01; 0.0 0.0 0.0]',
-    contact_matrix, demography_vector,
-    parameters=[[0.14, 0.12, 0.2], [0.5, 0.5, 0.5], [0.05, 0.05, 0.05]],
+    init=[1.0-1e-6 1.0-1e-6 1.0-1e-6
+        1e-6/2.0 1e-6/2.0 1e-6/2.0
+        1e-6/2.0 1e-6/2.0 1e-6/2.0
+        0.0 0.0 0.0
+    ]',
+    contact_matrix=ones(3, 3) * 5.0,
+    demography_vector=67e6 * [0.23, 0.4, 0.37],
+    r0=[1.5, 1.5, 1.5],
+    preinfectious_period=[3.0, 3.0, 3.0],
+    infectious_period=[7.0, 7.0, 7.0],
     time_end=200.0,
     increment=0.1)
 
@@ -27,12 +32,20 @@ function epidemic(;
         initial_conditions=init, demography_vector=demography_vector
     )
 
+    # prepare parameters
+    parameters = [
+        r0_to_beta(r0=r0, infectious_period=infectious_period),
+        preinfectious_period_to_beta2(preinfectious_period=preinfectious_period),
+        infectious_period_to_gamma(infectious_period=infectious_period),
+        contact_matrix
+    ]
+
     # prepare the timespan
     timespan = (0.0, time_end)
 
     # pick the correct model function - can be done from database later
     if model_name == "seir"
-        fn_epidemic = seir
+        fn_epidemic = seir!
     end
 
     # define the ode problem
@@ -51,7 +64,7 @@ function epidemic(;
 
     # WIP - function to handle data with correct naming
 
-    return data_output
+    return prepare_data(ode_solution_df=data_output)
 
 end
 
