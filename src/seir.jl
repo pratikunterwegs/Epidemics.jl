@@ -1,5 +1,5 @@
 """
-    seir(du, u, p, t)
+    seir(du, u, parameters, t)
 
 A simple SEIR epidemic model function that allows for multiple demographic
     groups. This function is intended to be called internally from
@@ -18,7 +18,12 @@ A simple SEIR epidemic model function that allows for multiple demographic
 function seir!(du, u, parameters, t)
     # assumes that each element of the vector is a 
     # vector of rates
-    β, β2, γ, contact_matrix = parameters
+    β, β2, γ, contact_matrix, intervention = parameters
+
+    # modify contact matrix if the intervention is active
+    if (t > intervention.time_begin) & (t < intervention.time_end)
+        contact_matrix = contact_matrix .* (1.0 .- intervention.contact_reduction)
+    end
 
     # view the values of each compartment per age group
     # rows represent age groups, epi compartments are columns
