@@ -1,10 +1,20 @@
 
 include("helpers.jl")
+include("classes.jl")
 include("seir.jl")
 include("prepare_data.jl")
 
 using OrdinaryDiffEq
 
+"""
+    epidemic(model_name, init, contact_matrix, demography_vector, r0,
+        preinfectious_period, infectious_period, interv, time_end, increment
+    )
+
+Model the progression of an epidemic, with age- or demographic-group specific
+contact patterns and proportions, epidemiological parameters, and interventions.
+    
+"""
 function epidemic(;
     model_name="seir", # named arguments begin here
     init=[1.0-1e-6 1.0-1e-6 1.0-1e-6
@@ -17,6 +27,7 @@ function epidemic(;
     r0=[1.5, 1.5, 1.5],
     preinfectious_period=[3.0, 3.0, 3.0],
     infectious_period=[7.0, 7.0, 7.0],
+    interv=npi(70.0, 100.0, [0.3, 0.2, 0.8]),
     time_end=200.0,
     increment=0.1)
 
@@ -38,7 +49,8 @@ function epidemic(;
         r0_to_beta(r0=r0, infectious_period=infectious_period),
         preinfectious_period_to_beta2(preinfectious_period=preinfectious_period),
         infectious_period_to_gamma(infectious_period=infectious_period),
-        contact_matrix
+        contact_matrix,
+        interv
     ]
 
     # prepare the timespan
