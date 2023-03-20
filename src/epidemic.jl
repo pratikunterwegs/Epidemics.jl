@@ -3,6 +3,7 @@ include("helpers.jl")
 include("seir.jl")
 include("prepare_data.jl")
 
+using OrdinaryDiffEq
 
 function epidemic(;
     model_name="seir", # named arguments begin here
