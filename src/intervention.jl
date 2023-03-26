@@ -5,8 +5,8 @@ A structure to hold the end points and strength of a non-pharmaceutical
 intervention.
     
 """
-abstract type intervention end
-mutable struct npi <: intervention
+abstract type Intervention end
+mutable struct Npi <: Intervention
   time_begin::Number
   time_end::Number
   contact_reduction::Vector{Number}
