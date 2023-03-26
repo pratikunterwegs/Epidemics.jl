@@ -2,6 +2,7 @@
 include("helpers.jl")
 include("intervention.jl")
 include("population.jl")
+include("pathogen.jl")
 include("seir.jl")
 include("prepare_data.jl")
 
@@ -18,19 +19,9 @@ contact patterns and proportions, epidemiological parameters, and interventions.
 """
 function epidemic(;
     model_name="seir", # named arguments begin here
-    population=Population(
-        demography_vector=67e6 * [0.23, 0.4, 0.37],
-        initial_conditions=[1.0-1e-6 1.0-1e-6 1.0-1e-6
-            1e-6/2.0 1e-6/2.0 1e-6/2.0
-            1e-6/2.0 1e-6/2.0 1e-6/2.0
-            0.0 0.0 0.0
-        ]',
-        contact_matrix=ones(3, 3) * 5.0
-    ),
-    r0=[1.5, 1.5, 1.5],
-    preinfectious_period=[3.0, 3.0, 3.0],
-    infectious_period=[7.0, 7.0, 7.0],
-    interv=Npi(70.0, 100.0, [0.3, 0.2, 0.8]),
+    population=Population(),
+    pathogen=Pathogen(),
+    intervention=Npi(),
     time_end=200.0,
     increment=0.1)
 
@@ -48,11 +39,17 @@ function epidemic(;
 
     # prepare parameters
     parameters = [
-        r0_to_beta(r0=r0, infectious_period=infectious_period),
-        preinfectious_period_to_beta2(preinfectious_period=preinfectious_period),
-        infectious_period_to_gamma(infectious_period=infectious_period),
+        r0_to_beta(r0=pathogen.r0,
+            infectious_period=pathogen.infectious_period
+        ),
+        preinfectious_period_to_beta2(
+            preinfectious_period=pathogen.preinfectious_period
+        ),
+        infectious_period_to_gamma(
+            infectious_period=pathogen.infectious_period
+        ),
         contact_matrix,
-        interv
+        intervention
     ]
 
     # prepare the timespan
