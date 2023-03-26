@@ -1,3 +1,6 @@
+
+include("helpers.jl")
+
 """
   Population(name, demography_vector, initial_conditions, contact_matrix)
 
@@ -18,10 +21,10 @@ mutable struct Population
     contact_matrix::Matrix{Number}
 end
 
-# external constructor allowing passing of name as 'none'
-function Population(; demography_vector=demography_vector,
-    initial_conditions=initial_conditions,
-    contact_matrix=contact_matrix)
+# external constructor allowing passing of some default values
+function Population(; demography_vector=67e6 * [0.23, 0.4, 0.37],
+    initial_conditions=default_initial_conditions(),
+    contact_matrix=default_contact_matrix() * 5)
     # input checking goes here
 
     # use default constructor with unnamed 
