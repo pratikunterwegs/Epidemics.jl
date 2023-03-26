@@ -35,6 +35,7 @@ function prepare_data(; ode_solution_df, n_age_groups=3,
     )
     # convert to long format, requires reassignment
     ode_solution_df = DataFrames.stack(ode_solution_df, df_names)
+    
     # split the variable column
     DataFrames.transform!(
         ode_solution_df,
