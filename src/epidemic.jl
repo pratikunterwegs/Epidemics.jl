@@ -1,6 +1,7 @@
 
 include("helpers.jl")
-include("classes.jl")
+include("intervention.jl")
+include("population.jl")
 include("seir.jl")
 include("prepare_data.jl")
 
@@ -17,17 +18,19 @@ contact patterns and proportions, epidemiological parameters, and interventions.
 """
 function epidemic(;
     model_name="seir", # named arguments begin here
-    init=[1.0-1e-6 1.0-1e-6 1.0-1e-6
-        1e-6/2.0 1e-6/2.0 1e-6/2.0
-        1e-6/2.0 1e-6/2.0 1e-6/2.0
-        0.0 0.0 0.0
-    ]',
-    contact_matrix=ones(3, 3) * 5.0,
-    demography_vector=67e6 * [0.23, 0.4, 0.37],
+    population=Population(
+        demography_vector=67e6 * [0.23, 0.4, 0.37],
+        initial_conditions=[1.0-1e-6 1.0-1e-6 1.0-1e-6
+            1e-6/2.0 1e-6/2.0 1e-6/2.0
+            1e-6/2.0 1e-6/2.0 1e-6/2.0
+            0.0 0.0 0.0
+        ]',
+        contact_matrix=ones(3, 3) * 5.0
+    ),
     r0=[1.5, 1.5, 1.5],
     preinfectious_period=[3.0, 3.0, 3.0],
     infectious_period=[7.0, 7.0, 7.0],
-    interv=npi(70.0, 100.0, [0.3, 0.2, 0.8]),
+    interv=Npi(70.0, 100.0, [0.3, 0.2, 0.8]),
     time_end=200.0,
     increment=0.1)
 
@@ -35,13 +38,12 @@ function epidemic(;
 
     # prepare the contact matrix
     contact_matrix = prepare_contact_matrix(
-        contact_matrix=contact_matrix,
-        demography_vector=demography_vector
+        population=population
     )
 
     # prepare the initial conditions
     init = prepare_initial_conditions(
-        initial_conditions=init, demography_vector=demography_vector
+        population=population
     )
 
     # prepare parameters
