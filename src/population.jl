@@ -1,6 +1,3 @@
-
-include("helpers.jl")
-
 """
   Population(name, demography_vector, initial_conditions, contact_matrix)
 
