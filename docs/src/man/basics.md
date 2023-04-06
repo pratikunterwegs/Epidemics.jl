@@ -1,57 +1,25 @@
 
 # Getting started with Epidemics.jl
 
-## Setting up the Environment
+!!! note "Experimental package"
 
-If want to use the Epidemics.jl package you need to install it first.
-You can do it using the following commands:
-
-```julia
-julia> using Pkg
-
-julia> Pkg.add("Epidemcs")
-```
-
-or
-
-```julia
-julia> ] # press ']' to enter the pkg command line
-
-(@v1.8) pkg> add Epidemics
-```
-
-If you want to make sure everything works as expected you can run the tests
-bundled with Epidemics.jl, but be warned that it will take more than 30
-minutes:
+    Epidemics.jl is not available from the package registry, but the latest development version can be installed from Github.
 
 ```julia
 julia> using Pkg
 
-julia> Pkg.test("Epidemics") # Warning! This could take some time.
+julia> Pkg.add("https://github.com/pratikunterwegs/Epidemics.jl")
 ```
 
-Additionally, it is recommended to check the version of Epidemics.jl that
-you have installed with the `status` command.
+The version of Epidemics.jl that is installed can be checked with the `status` command.
 
 ```julia
 julia> ]
 
-(@v1.9) pkg> status Epidemics
+(@v1.8) pkg> status Epidemics
 ```
 
-```jldoctest epidemics
-julia> using Epidemics
-```
-
-!!! note "Advanced installation configuration"
-
-    Epidemics.jl related notice: some notice here
-
-```@repl
-a = 1
-b = 2
-a + b
-```
+## Basic usage
 
 ```@example
 using Epidemics
