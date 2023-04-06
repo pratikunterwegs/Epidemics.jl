@@ -1,3 +1,4 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Epidemics = "3842d2e4-6389-40c1-b4a0-39a6a39a1f90"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
