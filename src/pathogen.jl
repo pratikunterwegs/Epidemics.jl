@@ -1,26 +1,21 @@
 """
-  Pathogen(r0, preinfectious_period, infectious_period)
+    Pathogen(r0, preinfectious_period, infectious_period)
 
 A structure to hold the age-specific pathogen or infection parameters. These
-    currently include:
-    - 'r0': the basic reproductive number of the infection ``R_0``;
-    - 'preinfectious_period': the average period (in simulation time - taken as days
-    ) between individuals being exposed to the pathogen and becoming infectious;
-    - 'infectious_period': the average period (in simulation time) for which
-    individuals are infectious.
-
-    The default model provided in Epidemics.jl is [`seir!`](@ref), which calculates:
-    - ``\\beta`` the transmission rate, which is the rate at which individuals move 
-    from the susceptible to the exposed compartment, as 
-    ``\\beta = R_0 / \\text{infectious period}``
-    - ``\\alpha`` the rate at which exposed individuals enter the infectious
-    compartment, calculated as ``\\alpha = 1 / \\text{preinfectious_period}``
-    - ``\\gamma`` the recovery rate, the rate at which indviduals move from the
-    infectious to the recovered compartment, calculated as
-    ``\\gamma = 1 / \\text{infectious_period}``.
+currently include: 'r0': the basic reproductive number of the infection ``R_0``;
+'`preinfectious_period`': the average period (in simulation time - taken as days)
+between individuals being exposed to the pathogen and becoming infectious;
+'`infectious_period`': the average period (in simulation time) for which
+individuals are infectious. The default model provided in `Epidemics.jl` is
+[`seir!`](@ref), which calculates ``\\beta`` the transmission rate, which is the
+rate at which individuals move from the susceptible to the exposed compartment,
+as ``\\beta = R_0 / {\\text{infectious period}}``; ``\\alpha``, the rate at which 
+exposed individuals enter the infectious compartment, calculated as 
+``\\alpha = 1 / {\\text{preinfectious period}}``; ``\\gamma``, the recovery rate, 
+the rate at which indviduals move from the infectious to the recovered 
+compartment, calculated as ``\\gamma = 1 / {\\text{infectious period}}``.
 
 """
-
 mutable struct Pathogen
     r0::Vector{Number}
     preinfectious_period::Vector{Number}
