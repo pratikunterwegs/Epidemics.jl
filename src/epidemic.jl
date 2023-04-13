@@ -3,7 +3,8 @@ include("helpers.jl")
 include("intervention.jl")
 include("population.jl")
 include("pathogen.jl")
-include("seir.jl")
+include("vaccination.jl")
+include("model_epidemic_default.jl")
 include("prepare_data.jl")
 
 using OrdinaryDiffEq
@@ -14,7 +15,8 @@ using OrdinaryDiffEq
     )
 
 Model the progression of an epidemic, with age- or demographic-group specific
-contact patterns and proportions and non-pharmaceutical interventions.
+contact patterns and proportions, non-pharmaceutical interventions with group-
+specific effects, and group-specific vaccination regimes.
     
 """
 function epidemic(;
@@ -22,6 +24,7 @@ function epidemic(;
     population=Population(),
     pathogen=Pathogen(),
     intervention=Npi(),
+    vaccination=Vaccination(),
     time_end=200.0,
     increment=0.1)
 
@@ -49,7 +52,8 @@ function epidemic(;
             infectious_period=pathogen.infectious_period
         ),
         contact_matrix,
-        intervention
+        intervention,
+        vaccination
     ]
 
     # prepare the timespan
@@ -57,7 +61,7 @@ function epidemic(;
 
     # pick the correct model function - can be done from database later
     if model_name == "seir"
-        fn_epidemic = seir!
+        fn_epidemic = epidemic_default!
     end
 
     # define the ode problem

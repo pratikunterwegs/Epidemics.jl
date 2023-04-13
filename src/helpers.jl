@@ -18,14 +18,15 @@ function prepare_contact_matrix(; population)
 end
 
 function default_initial_conditions(; n_groups=3, p_infected=1e-6, p_exposed=0,
-    model="SEIR")
+    model="default")
 
     # switch based on model
-    if model == "SEIR"
+    if model == "default"
         default_s = 1.0 .- (p_infected .+ p_exposed)
         default_i = p_infected
         default_e = p_exposed
         default_r = repeat([0.0], n_groups)
+        default_v = repeat([0.0], n_groups)
 
         if length(default_s) == 1
             default_s = repeat([default_s], n_groups)
@@ -38,7 +39,7 @@ function default_initial_conditions(; n_groups=3, p_infected=1e-6, p_exposed=0,
         end
 
         return [
-            default_s  default_e default_i default_r
+            default_s  default_e default_i default_r default_v
         ] # rows represent age groups
     end
 end

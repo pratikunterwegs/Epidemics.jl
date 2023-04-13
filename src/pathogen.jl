@@ -9,9 +9,10 @@ A structure to hold the age-specific pathogen or infection parameters. These
     - 'infectious_period': the average period (in simulation time) for which
     individuals are infectious.
 
-    The default model provided in Epidemics.jl is [`seir!`](@ref), which calculates:
-    - ``\\beta`` the transmission rate, which is the rate at which individuals move 
-    from the susceptible to the exposed compartment, as 
+    The default model provided in Epidemics.jl is [`epidemic_default!`](@ref), 
+    which calculates:
+    - ``\\beta`` the transmission rate, which is the rate at which individuals 
+    move from the susceptible to the exposed compartment, as 
     ``\\beta = R_0 / \\text{infectious period}``
     - ``\\alpha`` the rate at which exposed individuals enter the infectious
     compartment, calculated as ``\\alpha = 1 / \\text{preinfectious_period}``
@@ -19,8 +20,8 @@ A structure to hold the age-specific pathogen or infection parameters. These
     infectious to the recovered compartment, calculated as
     ``\\gamma = 1 / \\text{infectious_period}``.
 
-    The default model [`seir!`](@ref) supports only a single, population-wide
-    value for each of the transition rates.
+    The default model [`epidemic_default!`](@ref) supports only a single,
+    population-wide value for each of the transition rates.
 
 """
 
