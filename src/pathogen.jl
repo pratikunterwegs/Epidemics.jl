@@ -19,6 +19,9 @@ A structure to hold the age-specific pathogen or infection parameters. These
     infectious to the recovered compartment, calculated as
     ``\\gamma = 1 / \\text{infectious_period}``.
 
+    The default model [`seir!`](@ref) supports only a single, population-wide
+    value for each of the transition rates.
+
 """
 
 mutable struct Pathogen

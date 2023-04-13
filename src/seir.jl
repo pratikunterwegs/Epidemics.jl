@@ -6,19 +6,16 @@ A simple SEIR epidemic model function that allows for multiple demographic
     [`epidemic`](@ref).
     The function expects the parameters argument to be a four element vector
     with the following elements:
-    - a vector of ``\\beta``, the transmission rate, where each element of the
-    vector represents the transmission rate of the pathogen within a specific
-    demographic group;
-    - a vector of ``\\alpha``, the group-specific rate of conversion from exposed 
-    to infectious;
-    - a vector of ``\\gamma``, the group-specific rate of recovery;
+    - ``\\beta``, the transmission rate;
+    - ``\\alpha``, the rate of conversion from exposed to infectious;
+    - ``\\gamma``, the rate of recovery;
     - a matrix specifying the contacts between demographic groups;
-    - a matrix of the interventio applied to each age group, see [`Npi`](@ref)
+    - an `Npi` object specifying the intervention applied to each age
+    group, see [`Npi`](@ref)
     
 """
 function seir!(du, u, parameters, t)
-    # assumes that each element of the vector is a 
-    # vector of rates
+    # assumes that each element of the vector is one of the required params
     β, α, γ, contact_matrix, intervention = parameters
 
     # modify contact matrix if the intervention is active

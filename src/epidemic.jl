@@ -9,12 +9,12 @@ include("prepare_data.jl")
 using OrdinaryDiffEq
 
 """
-    epidemic(model_name, init, contact_matrix, demography_vector, r0,
-        preinfectious_period, infectious_period, interv, time_end, increment
+    epidemic(model_name, population, pathogen, intervention,
+        time_end, increment
     )
 
 Model the progression of an epidemic, with age- or demographic-group specific
-contact patterns and proportions, epidemiological parameters, and interventions.
+contact patterns and proportions and non-pharmaceutical interventions.
     
 """
 function epidemic(;
