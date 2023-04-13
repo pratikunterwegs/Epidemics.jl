@@ -1,5 +1,5 @@
 """
-    seir!(du, u, parameters, t)
+    epidemic_default!(du, u, parameters, t)
 
 A simple SEIR epidemic model function that allows for multiple demographic
     groups. This function is intended to be called internally from
@@ -14,15 +14,18 @@ A simple SEIR epidemic model function that allows for multiple demographic
     group, see [`Npi`](@ref)
     
 """
-function seir!(du, u, parameters, t)
+function epidemic_default!(du, u, parameters, t)
     # assumes that each element of the vector is one of the required params
-    β, α, γ, contact_matrix, intervention = parameters
+    β, α, γ, contact_matrix, intervention, vaccination = parameters
 
     # modify contact matrix if the intervention is active
     if (t > intervention.time_begin) & (t < intervention.time_end)
         contact_matrix = contact_matrix .*
                          (1.0 .- intervention.contact_reduction)
     end
+
+    # get current ν
+    ν_now = current_nu(time=t, vaccination=vaccination)
 
     # view the values of each compartment per age group
     # rows represent age groups, epi compartments are columns
@@ -31,17 +34,20 @@ function seir!(du, u, parameters, t)
     I = contact_matrix * @view u[:, 3] # matrix mult for cm * I
     I_ = @view u[:, 3] # unmultiplied I for operations involving only I
     R = @view u[:, 4]
+    V = @view u[:, 5]
 
     # views to the change matrix, dU
     dS = @view du[:, 1]
     dE = @view du[:, 2]
     dI = @view du[:, 3]
     dR = @view du[:, 4]
+    dV = @view du[:, 5]
 
     # calculate change in compartment size and update the change matrix dU
     # note the use of @. for broadcasting, equivalent to .=
-    @. dS = -β * S * I # contact matrix cannot be multiplied here due to @.?
+    @. dS = (-β * S * I) + (-ν_now * S) # contact matrix cannot be multiplied here
     @. dE = β * S * I - α * E
     @. dI = α * E - (γ * I_) # note use of I_
     @. dR = γ * I_
+    @. dV = ν_now * S
 end
