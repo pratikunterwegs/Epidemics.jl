@@ -30,7 +30,8 @@ end
 
 # helper function for Vaccination object
 function current_nu(; time::Number, vaccination::Vaccination)
-    current_nu = vaccination.ν .* ((vaccination.time_begin .< time) .&&
-                                   (vaccination.time_end .> time))
+    current_nu = vaccination.ν .* (
+        (time .> vaccination.time_begin) .& (time .< vaccination.time_end)
+    ) # broadcast bitwise & as broadcast logical operator gives bitwise vector
     return current_nu
 end
