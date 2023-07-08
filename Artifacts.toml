@@ -1,0 +1,6 @@
+[hello_artifact]
+git-tree-sha1 = "b2781d3afec1cc59422539e3463ec76e789b47d5"
+
+    [[hello_artifact.download]]
+    sha256 = "16ec5413655aae7df948a2f89e11cd0cb79f109d2de3cf94ad4e71b4e09e0960"
+    url = "https://gist.github.com/pratikunterwegs/846cf3cc6d4de6d45589cd925558a6ef/raw/b2781d3afec1cc59422539e3463ec76e789b47d5.tar.gz"

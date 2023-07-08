@@ -1,13 +1,15 @@
 """
-  Pathogen(r0, preinfectious_period, infectious_period)
+  Infection(name, r0, infectious_period, extra_arguments)
 
-A structure to hold the age-specific pathogen or infection parameters. These
+A structure to hold the infection parameters. These
     currently include:
+    - 'name': a string for the name of the infection;
     - 'r0': the basic reproductive number of the infection ``R_0``;
-    - 'preinfectious_period': the average period (in simulation time - taken as days
-    ) between individuals being exposed to the pathogen and becoming infectious;
     - 'infectious_period': the average period (in simulation time) for which
-    individuals are infectious.
+    individuals are infectious;
+    - 'extra_arguments': a named `tuple` with extra parameters of the infection,
+    these may include values such as the pre-infectious period, or the
+    hospitalisation rate.
 
     The default model provided in Epidemics.jl is [`epidemic_default!`](@ref), 
     which calculates:
@@ -25,23 +27,15 @@ A structure to hold the age-specific pathogen or infection parameters. These
 
 """
 
-mutable struct Pathogen
-    r0::Vector{Number}
-    preinfectious_period::Vector{Number}
-    infectious_period::Vector{Number}
+mutable struct Infection
+    name::String
+    r0::Number
+    infectious_period::Number
+    extra_arguments::NamedTuple
 end
 
-function Pathogen(; r0=1.5, preinfectious_period=3, infectious_period=7)
-    # convert contact reduction to a vector if a single number
-    if length(r0) == 1
-        r0 = [r0]
-    end
-    if length(preinfectious_period) == 1
-        preinfectious_period = [preinfectious_period]
-    end
-    if length(infectious_period) == 1
-        infectious_period = [infectious_period]
-    end
+function Infection(; name = "none", r0=1.5, infectious_period=7,
+    extra_arguments=(preinfectious_period=5,))
 
-    return Pathogen(r0, preinfectious_period, infectious_period)
+    return Infection(name, r0, infectious_period, extra_arguments)
 end

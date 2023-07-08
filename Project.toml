@@ -4,6 +4,8 @@ authors = ["Pratik Gupte <pratikgupte16@gmail.com> and contributors"]
 version = "0.0.9"
 
 [deps]
+ArtifactUtils = "8b73e784-e7d8-4ea5-973d-377fed4e3bce"
+Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
 JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
