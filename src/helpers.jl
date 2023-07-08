@@ -1,7 +1,9 @@
 
+include("population.jl")
+
 using LinearAlgebra
 
-function prepare_contact_matrix(; population)
+function prepare_contact_matrix(; population::Population)
     # input checking here
     # WIP check that square matrix has as many rows as demographic groups
 
@@ -48,7 +50,7 @@ function default_contact_matrix(; n_groups = 3)
     return ones(n_groups, n_groups)
 end
 
-function prepare_initial_conditions(; population)
+function prepare_initial_conditions(; population::Population)
     # input checking here; check that initial initial_conditions
     # is a matrix and has as many rows as demography_vector
 
