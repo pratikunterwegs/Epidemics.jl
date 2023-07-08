@@ -4,13 +4,14 @@ include("intervention.jl")
 include("population.jl")
 include("pathogen.jl")
 include("vaccination.jl")
+include("prepare_args_default.jl")
 include("model_epidemic_default.jl")
 include("prepare_data.jl")
 
 using OrdinaryDiffEq
 
 """
-    epidemic(model_name, population, pathogen, intervention,
+    epidemic(model_name, population, infection, intervention,
         time_end, increment
     )
 
@@ -22,18 +23,13 @@ specific effects, and group-specific vaccination regimes.
 function epidemic(;
     model_name="seir", # named arguments begin here
     population=Population(),
-    pathogen=Pathogen(),
+    infection=Infection(),
     intervention=Npi(),
     vaccination=Vaccination(),
     time_end=200.0,
     increment=0.1)
 
-    # input checking goes here
-
-    # prepare the contact matrix
-    contact_matrix = prepare_contact_matrix(
-        population=population
-    )
+    # TODO: input checking goes here
 
     # prepare the initial conditions
     init = prepare_initial_conditions(
@@ -41,20 +37,12 @@ function epidemic(;
     )
 
     # prepare parameters
-    parameters = [
-        r0_to_beta(r0=pathogen.r0,
-            infectious_period=pathogen.infectious_period
-        ),
-        preinfectious_period_to_beta2(
-            preinfectious_period=pathogen.preinfectious_period
-        ),
-        infectious_period_to_gamma(
-            infectious_period=pathogen.infectious_period
-        ),
-        contact_matrix,
-        intervention,
-        vaccination
-    ]
+    parameters = prepare_args_default(
+        population=population,
+        infection=infection,
+        intervention=intervention,
+        vaccination=vaccination
+    )
 
     # prepare the timespan
     timespan = (0.0, time_end)
