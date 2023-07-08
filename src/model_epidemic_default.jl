@@ -16,12 +16,12 @@ A simple SEIR epidemic model function that allows for multiple demographic
 """
 function epidemic_default!(du, u, parameters, t)
     # assumes that each element of the vector is one of the required params
-    β, α, γ, contact_matrix, intervention, vaccination = parameters
+    population, β, α, γ, intervention, vaccination = parameters
 
     # modify contact matrix if the intervention is active
     if (t > intervention.time_begin) & (t < intervention.time_end)
-        contact_matrix = contact_matrix .*
-                         (1.0 .- intervention.contact_reduction)
+        population.contact_matrix = population.contact_matrix .*
+                                    (1.0 .- intervention.contact_reduction)
     end
 
     # get current ν
@@ -31,7 +31,7 @@ function epidemic_default!(du, u, parameters, t)
     # rows represent age groups, epi compartments are columns
     S = @view u[:, 1]
     E = @view u[:, 2]
-    I = contact_matrix * @view u[:, 3] # matrix mult for cm * I
+    I = population.contact_matrix * @view u[:, 3] # matrix mult for cm * I
     I_ = @view u[:, 3] # unmultiplied I for operations involving only I
     R = @view u[:, 4]
     V = @view u[:, 5]
