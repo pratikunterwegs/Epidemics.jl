@@ -4,6 +4,6 @@ module Epidemics
 export sum_values
 
 include("example.jl")
-include("epidemic.jl")
+include("model_epidemic_default.jl")
 
 end

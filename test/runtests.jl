@@ -14,7 +14,7 @@ end
     n_age_groups = 3.0
     n_compartments = 5.0 #SEIRV
 
-    data = Epidemics.epidemic(time_end=time_end, increment=1.0)
+    data = Epidemics.epidemic_default(time_end=time_end, increment=1.0)
     @test typeof(data) == DataFrames.DataFrame
     @test size(data, 2) == 4 # test for four cols
     # count initial rows for t = 0.0
