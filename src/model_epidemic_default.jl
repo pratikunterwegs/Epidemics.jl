@@ -1,7 +1,6 @@
 
 include("helpers.jl")
 include("intervention.jl")
-include("population.jl")
 include("pathogen.jl")
 include("vaccination.jl")
 include("prepare_args_default.jl")
@@ -13,19 +12,21 @@ using OrdinaryDiffEq
     epidemic_default_ode!(du, u, parameters, t)
 
 A simple SEIRV epidemic model function that allows for multiple demographic
-    groups. This function is intended to be called internally from
-    [`epidemic_default`](@ref).
-    The function expects the `parameters` argument to be a four element vector
-    with the following elements:
-    - a `Population` object with a prepared contact matrix, see [`Population`]
-    (@ref);
-    - ``\\beta``, the transmission rate;
-    - ``\\alpha``, the rate of conversion from exposed to infectious;
-    - ``\\gamma``, the rate of recovery;
-    - a matrix specifying the contacts between demographic groups;
-    - an `Npi` object specifying the intervention applied to each age
-    group, see [`Npi`](@ref);
-    - a `Vaccination` object, see [`Vaccination`](@ref);
+groups. This function is intended to be called internally from
+[`epidemic_default`](@ref).
+
+The function expects the `parameters` argument to be a four element vector
+with the following elements:
+
+- a `Population` object with a prepared contact matrix, see [`Population`]
+(@ref);
+- ``\\beta``, the transmission rate;
+- ``\\alpha``, the rate of conversion from exposed to infectious;
+- ``\\gamma``, the rate of recovery;
+- a matrix specifying the contacts between demographic groups;
+- an `Npi` object specifying the intervention applied to each age
+group, see [`Npi`](@ref);
+- a `Vaccination` object, see [`Vaccination`](@ref);
 
     
 """
