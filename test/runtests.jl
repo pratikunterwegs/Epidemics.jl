@@ -3,18 +3,14 @@ using Test
 
 using DataFrames
 
-@testset "Epidemics.jl" begin
-    x = 2
-    y = 2
-    @test Epidemics.sum_values(x, y) == 4
-end
-
-@testset "SEIR model return type" begin
+@testset "Default model return type" begin
     time_end = 100.0
     n_age_groups = 3.0
-    n_compartments = 5.0 #SEIRV
+    n_compartments = 5 #SEIRV
 
-    data = Epidemics.epidemic_default(time_end=time_end, increment=1.0)
+    # run the model
+    data = epidemic_default(time_end=time_end, increment=1.0)
+
     @test typeof(data) == DataFrames.DataFrame
     @test size(data, 2) == 4 # test for four cols
     # count initial rows for t = 0.0
