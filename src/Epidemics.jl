@@ -1,9 +1,6 @@
 module Epidemics
 
-# Write your package code here.
-export sum_values
-
-include("example.jl")
+# Write your package code here
 include("model_epidemic_default.jl")
 
 end
