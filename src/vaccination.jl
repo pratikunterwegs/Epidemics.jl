@@ -6,26 +6,21 @@ intervention.
 
 """
 mutable struct Vaccination
-    time_begin::Vector{Number}
-    time_end::Vector{Number}
-    ν::Vector{Number}
+    time_begin::Vector
+    time_end::Vector
+    ν::Vector
 end
 
-function Vaccination(; time_begin=50, time_end=80, contact_reduction=0.25)
-    # convert parameters to vectors if a single number
-    if length(time_begin) == 1
-        time_begin = [time_begin]
-    end
+function Vaccination(; time_begin::Vector=[50],
+    time_end::Vector=[80],
+    ν::Vector=[0.25])
 
-    if length(time_end) == 1
-        time_end = [time_end]
-    end
+    # check for inputs
+    @assert (length(time_begin) == length(time_end)) &&
+        (length(time_begin) == length(ν))
+    "All arguments to Vaccination() must be Number Vectors of the same length"
 
-    if length(contact_reduction) == 1
-        contact_reduction = [contact_reduction]
-    end
-
-    return Vaccination(time_begin, time_end, contact_reduction)
+    return Vaccination(time_begin, time_end, ν)
 end
 
 # helper function for Vaccination object

@@ -1,8 +1,8 @@
 using DataFrames
 
-function prepare_data(; ode_solution_df, n_age_groups=3,
-    compartment_names=["susceptible", "exposed", "infectious", "recovered",
-        "vaccinated"])
+function prepare_data(; ode_solution_df::DataFrame, n_age_groups::Number=3,
+    compartment_names::Vector{String}=["susceptible", "exposed", "infectious",
+        "recovered", "vaccinated"])
 
     # input checking here
 
@@ -25,7 +25,7 @@ function prepare_data(; ode_solution_df, n_age_groups=3,
     # check for length of ouput
 
     # rename dataframe
-    DataFrames.rename!(
+    rename!(
         ode_solution_df,
         Dict(
             zip(
@@ -35,15 +35,15 @@ function prepare_data(; ode_solution_df, n_age_groups=3,
         )
     )
     # convert to long format, requires reassignment
-    ode_solution_df = DataFrames.stack(ode_solution_df, df_names)
+    ode_solution_df = stack(ode_solution_df, df_names)
 
     # split the variable column
-    DataFrames.transform!(
+    transform!(
         ode_solution_df,
-        :variable => DataFrames.ByRow(x -> split(x, '.')) =>
+        :variable => ByRow(x -> split(x, '.')) =>
             [:demo_group, :compartment]
     )
-    DataFrames.select!(ode_solution_df, Not([:variable]))
+    select!(ode_solution_df, Not([:variable]))
 
     # return reshaped and renamed data
     return ode_solution_df
