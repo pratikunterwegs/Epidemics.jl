@@ -79,12 +79,12 @@ specific effects, and group-specific vaccination regimes.
     
 """
 function epidemic_default(;
-    population=Population(),
-    infection=Infection(),
-    intervention=Npi(),
-    vaccination=Vaccination(),
-    time_end=200.0,
-    increment=0.1)
+    population::Population=Population(),
+    infection::Infection=Infection(),
+    intervention::Npi=Npi(),
+    vaccination::Vaccination=Vaccination(),
+    time_end::Number=200.0,
+    increment::Number=0.1)
 
     # TODO: input checking goes here
 
@@ -105,13 +105,13 @@ function epidemic_default(;
     timespan = (0.0, time_end)
 
     # define the ode problem
-    ode_problem = OrdinaryDiffEq.ODEProblem(
+    ode_problem = ODEProblem(
         epidemic_default_ode!, init, timespan, parameters
     )
 
     # get the solution
-    ode_solution = OrdinaryDiffEq.solve(
-        ode_problem, OrdinaryDiffEq.AutoTsit5(OrdinaryDiffEq.Rosenbrock23()),
+    ode_solution = solve(
+        ode_problem, AutoTsit5(Rosenbrock23()),
         saveat=increment
     )
 

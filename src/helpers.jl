@@ -52,7 +52,7 @@ A matrix with the dimensions `n_groups * 5`, with each row representing a
     epidemiological compartments of the default model.
 """
 function default_initial_conditions(; n_groups::Number=3,
-    p_infected::Vector{Number}=[1e-6], p_exposed::Vector{Number}=[0])
+    p_infected::Vector=[1e-6, 1e-6, 1e-6], p_exposed::Vector=[0.0, 0.0, 0.0])
 
     @assert isa(n_groups, Number) "Argument `n_groups` must be a single number."
     @assert all(p_infected .>= 0.0) && all(p_infected .<= 1.0)

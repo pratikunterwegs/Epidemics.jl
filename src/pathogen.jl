@@ -11,7 +11,7 @@ A structure to hold the infection parameters. These
     these may include values such as the pre-infectious period, or the
     hospitalisation rate.
 
-    The default model provided in Epidemics.jl is [`epidemic_default!`](@ref), 
+    The default model provided in Epidemics.jl is [`epidemic_default`](@ref), 
     which calculates:
     - ``\\beta`` the transmission rate, which is the rate at which individuals 
     move from the susceptible to the exposed compartment, as 
@@ -22,7 +22,7 @@ A structure to hold the infection parameters. These
     infectious to the recovered compartment, calculated as
     ``\\gamma = 1 / \\text{infectious_period}``.
 
-    The default model [`epidemic_default!`](@ref) supports only a single,
+    The default model [`epidemic_default`](@ref) supports only a single,
     population-wide value for each of the transition rates.
 
 """
@@ -34,8 +34,9 @@ mutable struct Infection
     extra_arguments::NamedTuple
 end
 
-function Infection(; name = "none", r0=1.5, infectious_period=7,
-    extra_arguments=(preinfectious_period=5,))
+function Infection(; name::String="none", r0::Number=1.5,
+    infectious_period::Number=7,
+    extra_arguments::NamedTuple=(preinfectious_period=5,))
 
     return Infection(name, r0, infectious_period, extra_arguments)
 end
