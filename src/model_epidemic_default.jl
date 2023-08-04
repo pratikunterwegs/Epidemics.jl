@@ -1,5 +1,16 @@
+
+include("helpers.jl")
+include("intervention.jl")
+include("population.jl")
+include("pathogen.jl")
+include("vaccination.jl")
+include("prepare_args_default.jl")
+include("prepare_data.jl")
+
+using OrdinaryDiffEq
+
 """
-    epidemic_default!(du, u, parameters, t)
+    epidemic_default_ode!(du, u, parameters, t)
 
 A simple SEIR epidemic model function that allows for multiple demographic
     groups. This function is intended to be called internally from
@@ -14,7 +25,7 @@ A simple SEIR epidemic model function that allows for multiple demographic
     group, see [`Npi`](@ref)
     
 """
-function epidemic_default!(du, u, parameters, t)
+function epidemic_default_ode!(du, u, parameters, t)
     # assumes that each element of the vector is one of the required params
     population, β, α, γ, intervention, vaccination = parameters
 
@@ -51,3 +62,63 @@ function epidemic_default!(du, u, parameters, t)
     @. dR = γ * I_
     @. dV = ν_now * S
 end
+
+
+"""
+    epidemic_default(population, infection, intervention,
+        time_end, increment
+    )
+
+Model the progression of an epidemic, with age- or demographic-group specific
+contact patterns and proportions, non-pharmaceutical interventions with group-
+specific effects, and group-specific vaccination regimes.
+    
+"""
+function epidemic_default(;
+    population=Population(),
+    infection=Infection(),
+    intervention=Npi(),
+    vaccination=Vaccination(),
+    time_end=200.0,
+    increment=0.1)
+
+    # TODO: input checking goes here
+
+    # prepare the initial conditions
+    init = prepare_initial_conditions(
+        population=population
+    )
+
+    # prepare parameters
+    parameters = prepare_args_default(
+        population=population,
+        infection=infection,
+        intervention=intervention,
+        vaccination=vaccination
+    )
+
+    # prepare the timespan
+    timespan = (0.0, time_end)
+
+    # define the ode problem
+    ode_problem = OrdinaryDiffEq.ODEProblem(
+        epidemic_default_ode!, init, timespan, parameters
+    )
+
+    # get the solution
+    ode_solution = OrdinaryDiffEq.solve(
+        ode_problem, OrdinaryDiffEq.AutoTsit5(OrdinaryDiffEq.Rosenbrock23()),
+        saveat=increment
+    )
+
+    # convert to dataframe
+    data_output = DataFrames.DataFrame(ode_solution)
+
+    # WIP - function to handle data with correct naming
+    data_output = prepare_data(ode_solution_df=data_output)
+
+    return data_output
+
+end
+
+export epidemic_default
