@@ -24,7 +24,7 @@ function prepare_contact_matrix(; population::Population)
     # eigvals is assumed to return only the real eigenvalues
     # may need correction
     contact_matrix = population.contact_matrix /
-                     maximum(LinearAlgebra.eigvals(population.contact_matrix))
+                     maximum(eigvals(population.contact_matrix))
 
     # scale by the demography, divide each row by corresponding demography
     contact_matrix = contact_matrix ./ population.demography_vector

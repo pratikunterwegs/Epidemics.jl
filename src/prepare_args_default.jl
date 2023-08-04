@@ -2,13 +2,15 @@
     prepare_args_default(parameters)
 
 A function to prepare the parameters passed to the default epidemic model.
-    This function is intended to be called internally from [`epidemic`](@ref).
-    The function expects the parameters argument to be a four element `tuple`
-    with the following elements:
-    - `population`, for the `population` affected by the epidemic;
-    - `infection`, for the `infection` causing the epidemic;
-    - `intervention`, for any `Npi`s applied to the epidemic;
-    - `vaccination`, for any `vaccination`s applied to the population;
+This function is intended to be called internally from
+[`epidemic_default`](@ref).
+
+The function expects the parameters argument to be a four element `tuple`
+with the following elements:
+- `population`, for the `population` affected by the epidemic;
+- `infection`, for the `infection` causing the epidemic;
+- `intervention`, for any `Npi`s applied to the epidemic;
+- `vaccination`, for any `vaccination`s applied to the population;
     
 """
 function prepare_args_default(; population::Population, infection::Infection,
