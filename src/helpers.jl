@@ -52,15 +52,12 @@ A matrix with the dimensions `n_groups * 5`, with each row representing a
     demographic groups and each column representing one of the five
     epidemiological compartments of the default model.
 """
-function default_initial_conditions(; n_groups::Number=3,
-    p_infected::Vector=[1e-6, 1e-6, 1e-6], p_exposed::Vector=[0.0, 0.0, 0.0])
-
-    @assert all(p_infected .>= 0.0) && all(p_infected .<= 1.0)
-    "Argument `p_infected` must have values between 0.0 and 1.0."
-    @assert all(p_exposed .>= 0.0) && all(p_exposed .<= 1.0)
-    "Argument `p_exposed` must have values between 0.0 and 1.0."
-    @assert all((p_infected .+ p_exposed) .<= 1.0)
-    "Sum of proportion infected and exposed cannot be greater than 1.0"
+function default_initial_conditions(; n_groups::Number = 3,
+                                    p_infected::Vector = [1e-6, 1e-6, 1e-6],
+                                    p_exposed::Vector = [0.0, 0.0, 0.0])
+    @assert all(p_infected .>= 0.0)&&all(p_infected .<= 1.0) "Argument `p_infected` must have values between 0.0 and 1.0."
+    @assert all(p_exposed .>= 0.0)&&all(p_exposed .<= 1.0) "Argument `p_exposed` must have values between 0.0 and 1.0."
+    @assert all((p_infected .+ p_exposed) .<= 1.0) "Sum of proportion infected and exposed cannot be greater than 1.0"
 
     # prepare initial conditions for the default model
     default_s = 1.0 .- (p_infected .+ p_exposed)
@@ -69,9 +66,7 @@ function default_initial_conditions(; n_groups::Number=3,
     default_r = repeat([0.0], n_groups)
     default_v = repeat([0.0], n_groups)
 
-    return [
-        default_s default_e default_i default_r default_v
-    ] # rows represent age groups
+    return [default_s default_e default_i default_r default_v] # rows represent age groups
 end
 
 """
@@ -85,7 +80,7 @@ Create a uniform contact matrix.
 ## Returns
 A matrix of `ones` with the dimensions `n_groups * n_groups`.
 """
-function default_contact_matrix(; n_groups::Number=3)
+function default_contact_matrix(; n_groups::Number = 3)
     return ones(n_groups, n_groups)
 end
 
@@ -177,4 +172,4 @@ function infectious_period_to_gamma(; infectious_period::Number)
 end
 
 export default_initial_conditions, r0_to_beta, preinfectious_period_to_alpha,
-    infectious_period_to_gamma
+       infectious_period_to_gamma

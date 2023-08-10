@@ -6,13 +6,12 @@ intervention.
     
 """
 mutable struct Npi
-  time_begin::Number
-  time_end::Number
-  contact_reduction::Vector
+    time_begin::Number
+    time_end::Number
+    contact_reduction::Vector
 end
 
-function Npi(; time_begin::Number=50, time_end::Number=80,
-  contact_reduction::Vector=[0.25])
-  
-  return Npi(time_begin, time_end, contact_reduction)
+function Npi(; time_begin::Number = 50, time_end::Number = 80,
+             contact_reduction::Vector = [0.25])
+    return Npi(time_begin, time_end, contact_reduction)
 end

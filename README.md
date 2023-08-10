@@ -6,6 +6,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://pratikunterwegs.github.io/Epidemics.jl/dev/)
 [![Build Status](https://github.com/pratikunterwegs/Epidemics.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/pratikunterwegs/Epidemics.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/pratikunterwegs/Epidemics.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/pratikunterwegs/Epidemics.jl)
+[![SciML Code Style](https://img.shields.io/static/v1?label=code%20style&message=SciML&color=9558b2&labelColor=389826)](https://github.com/SciML/SciMLStyle)
 
 _Epidemics.jl_ is a Julia package that aims to mirror the [R package _epidemics_](https://github.com/epiverse-trace/epidemics), and to provide a robust way to model epidemic and disease outbreak scenarios. _Epidemics.jl_ is a work in progress since it lags the development of _epidemics_.
 
