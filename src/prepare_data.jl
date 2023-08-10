@@ -22,18 +22,13 @@ function prepare_data(; ode_solution_df::DataFrame, n_age_groups::Number=3,
         end
     end
 
-    # check for length of ouput
+    # Get the names of columns to rename (excluding the unchanged column)
+    columns_to_rename = setdiff(names(ode_solution_df), ["timestamp"])
+    # Create an array of Pairs for renaming selected columns
+    name_pairs = [old => new for (old, new) in zip(columns_to_rename, df_names)]
+    # Rename selected columns using rename!
+    rename!(ode_solution_df, name_pairs)
 
-    # rename dataframe
-    rename!(
-        ode_solution_df,
-        Dict(
-            zip(
-                filter(e -> e != "timestamp", names(ode_solution_df)),
-                df_names
-            )
-        )
-    )
     # convert to long format, requires reassignment
     ode_solution_df = stack(ode_solution_df, df_names)
 
