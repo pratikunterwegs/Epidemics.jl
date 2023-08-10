@@ -1,8 +1,9 @@
 using DataFrames
 
-function prepare_data(; ode_solution_df::DataFrame, n_age_groups::Number=3,
-    compartment_names::Vector{String}=["susceptible", "exposed", "infectious",
-        "recovered", "vaccinated"])
+function prepare_data(; ode_solution_df::DataFrame, n_age_groups::Number = 3,
+                      compartment_names::Vector{String} = ["susceptible", "exposed",
+                          "infectious",
+                          "recovered", "vaccinated"])
 
     # input checking here
 
@@ -33,11 +34,8 @@ function prepare_data(; ode_solution_df::DataFrame, n_age_groups::Number=3,
     ode_solution_df = stack(ode_solution_df, df_names)
 
     # split the variable column
-    transform!(
-        ode_solution_df,
-        :variable => ByRow(x -> split(x, '.')) =>
-            [:demo_group, :compartment]
-    )
+    transform!(ode_solution_df,
+               :variable => ByRow(x -> split(x, '.')) => [:demo_group, :compartment])
     select!(ode_solution_df, Not([:variable]))
 
     # return reshaped and renamed data

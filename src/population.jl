@@ -19,15 +19,14 @@ mutable struct Population
 end
 
 # external constructor allowing passing of some default values
-function Population(; demography_vector::Vector=67e6 * [0.23, 0.4, 0.37],
-    initial_conditions::Matrix=default_initial_conditions(),
-    contact_matrix::Matrix=default_contact_matrix() * 5)
+function Population(; demography_vector::Vector = 67e6 * [0.23, 0.4, 0.37],
+                    initial_conditions::Matrix = default_initial_conditions(),
+                    contact_matrix::Matrix = default_contact_matrix() * 5)
     # input checking goes here
 
     # use default constructor with unnamed 
     return Population("none",
-        demography_vector,
-        initial_conditions,
-        contact_matrix
-    )
+                      demography_vector,
+                      initial_conditions,
+                      contact_matrix)
 end

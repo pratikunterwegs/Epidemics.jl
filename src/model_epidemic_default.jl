@@ -41,7 +41,7 @@ function epidemic_default_ode!(du, u, parameters, t)
     end
 
     # get current ν
-    ν_now = current_nu(time=t, vaccination=vaccination)
+    ν_now = current_nu(time = t, vaccination = vaccination)
 
     # view the values of each compartment per age group
     # rows represent age groups, epi compartments are columns
@@ -68,7 +68,6 @@ function epidemic_default_ode!(du, u, parameters, t)
     @. dV = ν_now * S
 end
 
-
 """
     epidemic_default(population, infection, intervention,
         time_end, increment
@@ -80,50 +79,41 @@ specific effects, and group-specific vaccination regimes.
     
 """
 function epidemic_default(;
-    population::Population=Population(),
-    infection::Infection=Infection(),
-    intervention::Npi=Npi(),
-    vaccination::Vaccination=Vaccination(),
-    time_end::Number=200.0,
-    increment::Number=0.1)
+                          population::Population = Population(),
+                          infection::Infection = Infection(),
+                          intervention::Npi = Npi(),
+                          vaccination::Vaccination = Vaccination(),
+                          time_end::Number = 200.0,
+                          increment::Number = 0.1)
 
     # TODO: input checking goes here
 
     # prepare the initial conditions
-    init = prepare_initial_conditions(
-        population=population
-    )
+    init = prepare_initial_conditions(population = population)
 
     # prepare parameters
-    parameters = prepare_args_default(
-        population=population,
-        infection=infection,
-        intervention=intervention,
-        vaccination=vaccination
-    )
+    parameters = prepare_args_default(population = population,
+                                      infection = infection,
+                                      intervention = intervention,
+                                      vaccination = vaccination)
 
     # prepare the timespan
     timespan = (0.0, time_end)
 
     # define the ode problem
-    ode_problem = ODEProblem(
-        epidemic_default_ode!, init, timespan, parameters
-    )
+    ode_problem = ODEProblem(epidemic_default_ode!, init, timespan, parameters)
 
     # get the solution
-    ode_solution = solve(
-        ode_problem, AutoTsit5(Rosenbrock23()),
-        saveat=increment
-    )
+    ode_solution = solve(ode_problem, AutoTsit5(Rosenbrock23()),
+                         saveat = increment)
 
     # convert to dataframe
     data_output = DataFrames.DataFrame(ode_solution)
 
     # WIP - function to handle data with correct naming
-    data_output = prepare_data(ode_solution_df=data_output)
+    data_output = prepare_data(ode_solution_df = data_output)
 
     return data_output
-
 end
 
 export epidemic_default
