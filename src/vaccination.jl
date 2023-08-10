@@ -16,9 +16,7 @@ function Vaccination(; time_begin::Vector = [50],
                      ν::Vector = [0.25])
 
     # check for inputs
-    @assert (length(time_begin) == length(time_end)) &&
-            (length(time_begin) == length(ν))
-    "All arguments to Vaccination() must be Number Vectors of the same length"
+    @assert (length(time_begin) == length(time_end))&&(length(time_begin) == length(ν)) "All arguments to Vaccination() must be Number Vectors of the same length"
 
     return Vaccination(time_begin, time_end, ν)
 end
