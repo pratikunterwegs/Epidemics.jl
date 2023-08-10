@@ -113,14 +113,67 @@ function prepare_initial_conditions(; population::Population)
     return init
 end
 
-function r0_to_beta(; r0, infectious_period)
-    return r0 ./ (infectious_period)
+"""
+    r0_to_beta(; r0, infectious_period)
+
+Calculate the transmission rate ``\\beta`` from the basic reproductive number
+``R_0`` and the mean infectious period.
+
+## Named Arguments
+
+- `r0`: A single number for the basic reproduction number of an infection.
+
+- `infectious_period`: A single number for the mean duration in days that
+individuals are infectious.
+
+## Returns
+A single number representing the transmission rate of the infection ``\\beta``
+"""
+function r0_to_beta(; r0::Number, infectious_period::Number)
+    @assert r0 > 0.0
+    "`r0` must be greater than 0.0"
+    @assert infectious_period > 0.0
+    "`infectious_period` must be greater than 0.0"
+    return r0 / (infectious_period)
 end
 
-function preinfectious_period_to_beta2(; preinfectious_period)
-    return 1.0 ./ preinfectious_period
+"""
+    preinfectious_period_to_alpha(; r0, preinfectious_period)
+
+Calculate the rate of transition from the 'exposed' to the 'infectious'
+compartment, ``\\alpha`` from the mean period between exposure and the initial
+occurrence of symptoms.
+
+## Named Arguments
+
+- `preinfectious_period`: A single number for the mean duration in days between
+individuals being exposed to infection and becoming infectious.
+
+## Returns
+A single number representing the transmission rate of the infectious ``\\alpha``
+"""
+function preinfectious_period_to_alpha(; preinfectious_period::Number)
+    @assert preinfectious_period > 0.0
+    "`preinfectious_period` must be greater than 0.0"
+    return 1.0 / preinfectious_period
 end
 
-function infectious_period_to_gamma(; infectious_period)
-    return 1.0 ./ infectious_period
+"""
+    infectious_period_to_gamma(; infectious_period)
+
+Calculate the recovery rate of the infection ``\\gamma`` from the infectious
+period.
+
+## Named Arguments
+
+- `infectious_period`: A single number for the mean duration in days that
+individuals are infectious.
+
+## Returns
+A single number representing the recovery rate of the infectious ``\\gamma``
+"""
+function infectious_period_to_gamma(; infectious_period::Number)
+    @assert infectious_period > 0.0
+    "`infectious_period` must be greater than 0.0"
+    return 1.0 / infectious_period
 end
