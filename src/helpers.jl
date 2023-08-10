@@ -4,7 +4,7 @@ include("population.jl")
 using LinearAlgebra
 
 """
-    prepare_contact_matrix(; n_groups)
+    prepare_contact_matrix(; population)
 
 Prepare a population contact matrix for an epidemic model.
 
@@ -33,7 +33,8 @@ function prepare_contact_matrix(; population::Population)
 end
 
 """
-    default_initial_conditions(; n_groups, p_infected=, p_exposed)
+    default_initial_conditions(; n_groups=3, p_infected=[1e-6, 1e-6, 1e-6],
+        p_exposed=[0.0, 0.0, 0.0])
 
 Create some useful initial conditions for the default SEIRV epidemic model.
 
@@ -54,11 +55,10 @@ A matrix with the dimensions `n_groups * 5`, with each row representing a
 function default_initial_conditions(; n_groups::Number=3,
     p_infected::Vector=[1e-6, 1e-6, 1e-6], p_exposed::Vector=[0.0, 0.0, 0.0])
 
-    @assert isa(n_groups, Number) "Argument `n_groups` must be a single number."
     @assert all(p_infected .>= 0.0) && all(p_infected .<= 1.0)
     "Argument `p_infected` must have values between 0.0 and 1.0."
     @assert all(p_exposed .>= 0.0) && all(p_exposed .<= 1.0)
-    "Argument `p_infected` must have values between 0.0 and 1.0."
+    "Argument `p_exposed` must have values between 0.0 and 1.0."
     @assert all((p_infected .+ p_exposed) .<= 1.0)
     "Sum of proportion infected and exposed cannot be greater than 1.0"
 
@@ -75,7 +75,7 @@ function default_initial_conditions(; n_groups::Number=3,
 end
 
 """
-    default_contact_matrix(; n_groups)
+    default_contact_matrix(; n_groups=3)
 
 Create a uniform contact matrix.
 
@@ -107,10 +107,8 @@ function prepare_initial_conditions(; population::Population)
     # is a matrix and has as many rows as demography_vector
 
     # rowwise multiplication of initial conditions by demography_vector
-    init = population.initial_conditions .* population.demography_vector
-
     # return linearised values
-    return init
+    return population.initial_conditions .* population.demography_vector
 end
 
 """
@@ -177,3 +175,6 @@ function infectious_period_to_gamma(; infectious_period::Number)
     "`infectious_period` must be greater than 0.0"
     return 1.0 / infectious_period
 end
+
+export default_initial_conditions, r0_to_beta, preinfectious_period_to_alpha,
+    infectious_period_to_gamma
