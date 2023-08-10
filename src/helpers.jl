@@ -123,10 +123,8 @@ individuals are infectious.
 A single number representing the transmission rate of the infection ``\\beta``
 """
 function r0_to_beta(; r0::Number, infectious_period::Number)
-    @assert r0 > 0.0
-    "`r0` must be greater than 0.0"
-    @assert infectious_period > 0.0
-    "`infectious_period` must be greater than 0.0"
+    @assert (r0>0.0) "`r0` must be greater than 0.0"
+    @assert (infectious_period>0.0) "`infectious_period` must be greater than 0.0"
     return r0 / (infectious_period)
 end
 
@@ -146,8 +144,7 @@ individuals being exposed to infection and becoming infectious.
 A single number representing the transmission rate of the infectious ``\\alpha``
 """
 function preinfectious_period_to_alpha(; preinfectious_period::Number)
-    @assert preinfectious_period > 0.0
-    "`preinfectious_period` must be greater than 0.0"
+    @assert (preinfectious_period>0.0) "`preinfectious_period` must be greater than 0.0"
     return 1.0 / preinfectious_period
 end
 
@@ -166,8 +163,7 @@ individuals are infectious.
 A single number representing the recovery rate of the infectious ``\\gamma``
 """
 function infectious_period_to_gamma(; infectious_period::Number)
-    @assert infectious_period > 0.0
-    "`infectious_period` must be greater than 0.0"
+    @assert (infectious_period>0.0) "`infectious_period` must be greater than 0.0"
     return 1.0 / infectious_period
 end
 
