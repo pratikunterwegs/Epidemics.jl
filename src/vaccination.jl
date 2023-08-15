@@ -27,3 +27,5 @@ function current_nu(; time::Number, vaccination::Vaccination)
                  ((time .> vaccination.time_begin) .& (time .< vaccination.time_end)) # broadcast bitwise & as broadcast logical operator gives bitwise vector
     return current_nu
 end
+
+export Vaccination, current_nu
