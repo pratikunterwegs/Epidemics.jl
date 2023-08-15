@@ -30,3 +30,5 @@ function Population(; demography_vector::Vector = 67e6 * [0.23, 0.4, 0.37],
                       initial_conditions,
                       contact_matrix)
 end
+
+export Population

@@ -39,3 +39,5 @@ function Infection(; name::String = "none", r0::Number = 1.5,
                    extra_arguments::NamedTuple = (preinfectious_period = 5,))
     return Infection(name, r0, infectious_period, extra_arguments)
 end
+
+export Infection
