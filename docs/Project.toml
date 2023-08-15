@@ -2,3 +2,4 @@
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Epidemics = "3842d2e4-6389-40c1-b4a0-39a6a39a1f90"
+Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
