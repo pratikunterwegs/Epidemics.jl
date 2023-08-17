@@ -41,3 +41,5 @@ function prepare_data(; ode_solution_df::DataFrame, n_age_groups::Number = 3,
     # return reshaped and renamed data
     return ode_solution_df
 end
+
+export prepare_data
