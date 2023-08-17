@@ -105,13 +105,7 @@ function epidemic_default(;
     ode_solution = solve(ode_problem, AutoTsit5(Rosenbrock23()),
                          saveat = increment)
 
-    # convert to dataframe
-    data_output = DataFrames.DataFrame(ode_solution)
-
-    # WIP - function to handle data with correct naming
-    data_output = prepare_data(ode_solution_df = data_output)
-
-    return data_output
+    return ode_solution
 end
 
 export epidemic_default
