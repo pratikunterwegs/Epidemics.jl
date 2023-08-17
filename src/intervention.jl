@@ -33,11 +33,16 @@ end
 
 # function for a cumulative intervention
 function cumulative_npi(; t, npi::Npi)
-  # which Npis are active
-  active = ((t .> npi.time_begin) .& (t .< npi.time_end))
-  cr = npi.contact_reduction[active]
-  cr = reduce((x, y) -> (1 .- x) .* (1 .- y), cr)
-  return cr
+    # which Npis are active
+    active = ((t .> npi.time_begin) .& (t .< npi.time_end))
+    cr = fill(0, length(npi.contact_reduction[1]))
+    for i in eachindex(active)
+      if active[i]
+        cr = cr .+ npi.contact_reduction[i]
+      end
+    end
+
+    return cr
 end
 
 export Npi, c, cumulative_npi
