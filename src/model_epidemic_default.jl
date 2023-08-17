@@ -35,10 +35,8 @@ function epidemic_default_ode!(du, u, parameters, t)
     population, β, α, γ, intervention, vaccination = parameters
 
     # modify contact matrix if the intervention is active
-    if (t > intervention.time_begin) & (t < intervention.time_end)
-        population.contact_matrix = population.contact_matrix .*
-                                    (1.0 .- intervention.contact_reduction)
-    end
+    contact_matrix = population.contact_matrix .*
+                     (1 .- cumulative_npi(t = t, npi = intervention))
 
     # get current ν
     ν_now = current_nu(time = t, vaccination = vaccination)
@@ -47,7 +45,7 @@ function epidemic_default_ode!(du, u, parameters, t)
     # rows represent age groups, epi compartments are columns
     S = @view u[:, 1]
     E = @view u[:, 2]
-    I = population.contact_matrix * @view u[:, 3] # matrix mult for cm * I
+    I = contact_matrix * @view u[:, 3] # matrix mult for cm * I
     I_ = @view u[:, 3] # unmultiplied I for operations involving only I
     R = @view u[:, 4]
     V = @view u[:, 5]
