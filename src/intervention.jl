@@ -29,7 +29,7 @@ function c(args::Npi...)
     # collect Npi elements
     time_begin = vcat([a.time_begin for a in args]...)
     time_end = vcat([a.time_end for a in args]...)
-    
+
     contact_reduction = [a.contact_reduction for a in args]
     contact_reduction = hcat(contact_reduction...)
 
@@ -40,12 +40,12 @@ end
 function cumulative_npi(; t, npi::Npi)
     # which Npis are active
     active = ((t .>= npi.time_begin) .& (t .<= npi.time_end))
-    
+
     cr = fill(0, size(npi.contact_reduction)[1])
     for i in eachindex(active)
-      if active[i]
-        cr = cr .+ npi.contact_reduction[:,i]
-      end
+        if active[i]
+            cr = cr .+ npi.contact_reduction[:, i]
+        end
     end
 
     # handle values greater than 1.0
