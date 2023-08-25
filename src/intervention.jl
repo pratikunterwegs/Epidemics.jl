@@ -24,6 +24,10 @@ function Npi(; time_begin::Vector = [50], time_end::Vector = [80],
     return Npi(time_begin, time_end, contact_reduction)
 end
 
+function no_intervention()::Npi
+  return Npi(time_begin = 0.0, time_end = 0.0, contact_reduction = [0.0])
+end
+
 # Define a constructor method to combine Npis
 function c(args::Npi...)
     # collect Npi elements
@@ -54,4 +58,4 @@ function cumulative_npi(; t, npi::Npi)
     return cr
 end
 
-export Npi, c, cumulative_npi
+export Npi, c, cumulative_npi, no_intervention

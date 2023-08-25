@@ -21,6 +21,10 @@ function Vaccination(; time_begin::Vector = [50],
     return Vaccination(time_begin, time_end, ν)
 end
 
+function no_vaccination(;doses::Number = 1)
+    return Vaccination(time_begin = [0], time_end = [0], ν = [0])
+end
+
 # helper function for Vaccination object
 function current_nu(; time::Number, vaccination::Vaccination)
     current_nu = vaccination.ν .*
@@ -28,4 +32,4 @@ function current_nu(; time::Number, vaccination::Vaccination)
     return current_nu
 end
 
-export Vaccination, current_nu
+export Vaccination, current_nu, no_vaccination
