@@ -9,7 +9,10 @@ using DataFrames
     n_compartments = 5 #SEIRV
 
     # run the model
-    data = epidemic_default(time_end=time_end, increment=1.0)
+    data = epidemic_default(time_end = time_end, increment = 1.0)
+
+    # convert to data.frame and apply `prepare_data`
+    data = prepare_data(ode_solution_df = DataFrame(data), n_age_groups = 3)
 
     @test typeof(data) == DataFrames.DataFrame
     @test size(data, 2) == 4 # test for four cols
@@ -21,8 +24,7 @@ using DataFrames
     # test that final values sum to the same as initial values
     initial_pop = sum(filter(:timestamp => x -> x == 0.0, data).value)
     final_pop = sum(filter(:timestamp => x -> x == time_end, data).value)
-    @test initial_pop ≈ final_pop atol = 1e-6
-
+    @test initial_pop≈final_pop atol=1e-6
 end
 
 # tests for helpers relating to initial conditions
@@ -33,15 +35,14 @@ end
     @test isa(default_initial_conditions(), AbstractMatrix{<:Number})
     # breaks when inputs are bad
     # p_infected outside limits
-    @test_throws AssertionError default_initial_conditions(p_infected=[1.1])
-    @test_throws AssertionError default_initial_conditions(p_infected=[-1e-6])
+    @test_throws AssertionError default_initial_conditions(p_infected = [1.1])
+    @test_throws AssertionError default_initial_conditions(p_infected = [-1e-6])
     # p_exposed outside limits
-    @test_throws AssertionError default_initial_conditions(p_exposed=[1.1])
-    @test_throws AssertionError default_initial_conditions(p_exposed=[-1e-6])
+    @test_throws AssertionError default_initial_conditions(p_exposed = [1.1])
+    @test_throws AssertionError default_initial_conditions(p_exposed = [-1e-6])
     # p_infected and p_exposed outside limits
-    @test_throws AssertionError default_initial_conditions(p_infected=[0.5],
-        p_exposed=[0.6])
-
+    @test_throws AssertionError default_initial_conditions(p_infected = [0.5],
+                                                           p_exposed = [0.6])
 end
 
 # tests for helpers to convert parameters
@@ -50,12 +51,10 @@ end
     # tests for default parameter conversion
     # functions throw assertion errors
     # r0_to_beta
-    @test_throws AssertionError r0_to_beta(r0=0.0, infectious_period=5)
-    @test_throws AssertionError r0_to_beta(r0=1.3, infectious_period=-5)
+    @test_throws AssertionError r0_to_beta(r0 = 0.0, infectious_period = 5)
+    @test_throws AssertionError r0_to_beta(r0 = 1.3, infectious_period = -5)
     # preinfectious period to alpha
-    @test_throws AssertionError preinfectious_period_to_alpha(
-        preinfectious_period=0.0)
+    @test_throws AssertionError preinfectious_period_to_alpha(preinfectious_period = 0.0)
     # infectious period to gamma
-    @test_throws AssertionError infectious_period_to_gamma(infectious_period=0)
-
+    @test_throws AssertionError infectious_period_to_gamma(infectious_period = 0)
 end
