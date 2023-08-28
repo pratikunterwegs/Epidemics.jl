@@ -58,3 +58,11 @@ end
     # infectious period to gamma
     @test_throws AssertionError infectious_period_to_gamma(infectious_period = 0)
 end
+
+# tests for the intervention class
+@testset "Intervention class" begin
+    @test isa(no_intervention(), Npi)
+    @test_throws ErrorException Npi(time_begin = 1, time_end = 0)
+    @test_throws ErrorException Npi(time_begin = 1, time_end = 0)
+    @test_throws ErrorException Npi(contact_reduction = [1.1, 0.1])
+end
