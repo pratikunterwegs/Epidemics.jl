@@ -9,6 +9,25 @@ mutable struct Npi
     time_begin::Vector
     time_end::Vector
     contact_reduction::Matrix
+
+    ## internal constructor
+    function Npi(time_begin, time_end, contact_reduction)
+        # basic input checking
+        @assert length(time_begin)==length(time_end) "`time_begin` and `time_end` must be the same length"
+        if any(time_begin .< 0.0)
+            error("`time_begin` must be > 0.0")
+        end
+        if any(time_end .< 0.0)
+            error("`time_end` must be > 0.0")
+        end
+        if any(time_end .< time_begin)
+            error("All `time_end` must be > corresponding `time_begin`")
+        end
+        if any((contact_reduction .> 1.0) .| (contact_reduction .< 0.0))
+            error("`contact_reduction` values must be in the range [0.0, 1.0]")
+        end
+        new(time_begin, time_end, contact_reduction)
+    end
 end
 
 function Npi(; time_begin::Number = 50, time_end::Number = 80,
@@ -18,14 +37,8 @@ function Npi(; time_begin::Number = 50, time_end::Number = 80,
     return Npi([time_begin], [time_end], contact_reduction)
 end
 
-function Npi(; time_begin::Vector = [50], time_end::Vector = [80],
-             contact_reduction::Matrix)
-    # convert contact reduction to matrix
-    return Npi(time_begin, time_end, contact_reduction)
-end
-
 function no_intervention()::Npi
-  return Npi(time_begin = 0.0, time_end = 0.0, contact_reduction = [0.0])
+    return Npi(time_begin = 0.0, time_end = 0.0, contact_reduction = [0.0])
 end
 
 # Define a constructor method to combine Npis
