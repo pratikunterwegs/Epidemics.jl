@@ -18,7 +18,7 @@ using Epidemics
 time_end = 500.0
 
 # benchmark the default model with 3 age groups, intervention, and vaccination
-@benchmark epidemic_default(time_end=time_end, increment=1.0)
+@benchmark epidemic_default(time_end=time_end, increment=1.0, intervention = no_intervention())
 ```
 
 ## Get started
@@ -28,8 +28,8 @@ using Epidemics
 using Gadfly
 using DataFrames
 
-# an epidemic of 300 days
-sim_time_end = 300.0
+# an epidemic of 500 days
+sim_time_end = 500.0
 
 # population of 10 million in three age groups
 pop = Population(
@@ -38,9 +38,9 @@ pop = Population(
     contact_matrix = ones(3, 3) * 5
 )
 
-# an infection
+# an infection similar to pandemic influenza
 pandemic = Infection(
-    r0 = 3,
+    r0 = 1.5,
     infectious_period = 7,
     extra_arguments = (
         preinfectious_period = 2,
@@ -74,6 +74,7 @@ plot(
     Guide.xlabel("Time"),
     Guide.ylabel("Individuals infectious"),
     Guide.colorkey("Demographic group"),
+    Scale.x_continuous(minvalue=100, maxvalue=500),
     Theme(
         key_position=:top
     )
@@ -88,7 +89,7 @@ using Gadfly
 using DataFrames
 
 # an epidemic of 300 days
-sim_time_end = 300.0
+sim_time_end = 500.0
 
 # population of 10 million in three age groups
 pop = Population(
@@ -97,9 +98,9 @@ pop = Population(
     contact_matrix = ones(3, 3) * 5
 )
 
-# an infection
+# an infection similar to pandemic influenza
 pandemic = Infection(
-    r0 = 3,
+    r0 = 1.5,
     infectious_period = 7,
     extra_arguments = (
         preinfectious_period = 2,
@@ -111,8 +112,8 @@ pandemic = Infection(
 # an intervention that reduces contacts by 50%, 20% and 60% for each age group
 # respectively
 intervention = Npi(
-    time_begin = 60, time_end = 200, 
-    contact_reduction = [0.5, 0.5, 0.5]
+    time_begin = 200, time_end = 230, 
+    contact_reduction = [0.3, 0.1, 0.1]
 )
 
 # run a model with no intervention
@@ -160,6 +161,7 @@ plot(
     Guide.xlabel("Time"),
     Guide.ylabel("Individuals infectious"),
     Guide.colorkey("Demographic group"),
+    Scale.x_continuous(minvalue=100, maxvalue=500),
     Theme(
         key_position=:top
     )
