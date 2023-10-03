@@ -84,7 +84,16 @@ function epidemic_default(;
                           time_end::Number = 200.0,
                           increment::Number = 0.1)
 
-    # TODO: input checking goes here
+    # input checking
+    @assert increment < time_end "`increment` must be less than `time_end`"
+    @assert increment > 0.0 "`increment` must be a positive number"
+    @assert time_end > 0.0 "`time_end` must be a positive number"
+
+    # expect that the intervention is compatible with the population
+    @assert size(intervention.contact_reduction)[1]==length(population.demography_vector) "`intervention` 'contact_reduction' member rows must match the number of demography groups in `population`"
+
+    # check that the vaccination is compatible with the population
+    @assert size(vaccination.ν)==length(population.demography_vector) "`Vaccination` 'ν' must match the number of demography groups in `Population`"
 
     # prepare the initial conditions
     init = prepare_initial_conditions(population = population)
