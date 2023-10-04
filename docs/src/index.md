@@ -18,7 +18,7 @@ using Epidemics
 time_end = 500.0
 
 # benchmark the default model with 3 age groups, intervention, and vaccination
-@benchmark epidemic_default(time_end=time_end, increment=1.0, intervention = no_intervention())
+@benchmark epidemic_default(population = Population(), infection = Infection(), time_end=time_end, increment=1.0)
 ```
 
 ## Get started
@@ -47,12 +47,10 @@ pandemic = Infection(
     )
 )
 
-# run the default model with 3 age groups, intervention, and vaccination
+# run the default model with 3 age groups, but no intervention or vaccination
 data = epidemic_default(
     population = pop,
     infection = pandemic,
-    intervention = no_intervention(), # for no intervention
-    vaccination = no_vaccination(),
     time_end = sim_time_end, increment=1.0
 )
 
@@ -116,12 +114,10 @@ intervention = Npi(
     contact_reduction = [0.3, 0.1, 0.1]
 )
 
-# run a model with no intervention
+# run a model with no intervention or vaccination
 data_baseline = epidemic_default(
     population = pop,
     infection = pandemic,
-    intervention = no_intervention(),
-    vaccination = no_vaccination(),
     time_end = sim_time_end, increment = 1.0
 )
 
@@ -130,7 +126,6 @@ data = epidemic_default(
     population = pop,
     infection = pandemic,
     intervention = intervention,
-    vaccination = no_vaccination(),
     time_end = sim_time_end, increment = 1.0
 )
 
