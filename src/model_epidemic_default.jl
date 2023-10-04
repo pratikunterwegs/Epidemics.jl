@@ -67,7 +67,7 @@ function epidemic_default_ode!(du, u, parameters, t)
 end
 
 """
-    epidemic_default(population, infection, intervention,
+    epidemic_default(population, infection, intervention, vaccination,
         time_end, increment
     )
 
@@ -77,32 +77,46 @@ specific effects, and group-specific vaccination regimes.
     
 """
 function epidemic_default(;
-                          population::Population = Population(),
-                          infection::Infection = Infection(),
-                          intervention::Npi = Npi(),
-                          vaccination::Vaccination = Vaccination(),
-                          time_end::Number = 200.0,
-                          increment::Number = 0.1)
+    population::Population,
+    infection::Infection,
+    intervention = nothing,
+    vaccination = nothing,
+    time_end::Number = 200.0,
+    increment::Number = 0.1)
 
     # input checking
-    @assert increment < time_end "`increment` must be less than `time_end`"
-    @assert increment > 0.0 "`increment` must be a positive number"
-    @assert time_end > 0.0 "`time_end` must be a positive number"
+    @assert increment<time_end "`increment` must be less than `time_end`"
+    @assert increment>0.0 "`increment` must be a positive number"
+    @assert time_end>0.0 "`time_end` must be a positive number"
 
-    # expect that the intervention is compatible with the population
-    @assert size(intervention.contact_reduction)[1]==length(population.demography_vector) "`intervention` 'contact_reduction' member rows must match the number of demography groups in `population`"
+    if isnothing(intervention)
+        intervention = no_intervention()
+    else
+        # check type
+        @assert isa(intervention, Npi) "`intervention` must be of type Npi"
+        # expect that the intervention is compatible with the population
+        @assert size(intervention.contact_reduction)[1]==
+                length(population.demography_vector)|size(intervention.contact_reduction)[1]==
+                1 "`intervention` 'contact_reduction' member rows must match the number of demography groups in `population`"
+    end
 
-    # check that the vaccination is compatible with the population
-    @assert size(vaccination.ν)==length(population.demography_vector) "`Vaccination` 'ν' must match the number of demography groups in `Population`"
+    if isnothing(vaccination)
+        vaccination = no_vaccination()
+    else
+        # check type
+        @assert isa(vaccination, Vaccination) "`vaccination` must be of type Vaccination"
+        # check that the vaccination is compatible with the population
+        @assert size(vaccination.ν)==length(population.demography_vector) "`Vaccination` 'ν' must match the number of demography groups in `Population`"
+    end
 
     # prepare the initial conditions
     init = prepare_initial_conditions(population = population)
 
     # prepare parameters
     parameters = prepare_args_default(population = population,
-                                      infection = infection,
-                                      intervention = intervention,
-                                      vaccination = vaccination)
+        infection = infection,
+        intervention = intervention,
+        vaccination = vaccination)
 
     # prepare the timespan
     timespan = (0.0, time_end)
@@ -112,7 +126,7 @@ function epidemic_default(;
 
     # get the solution
     ode_solution = solve(ode_problem, AutoTsit5(Rosenbrock23()),
-                         saveat = increment)
+        saveat = increment)
 
     return ode_solution
 end
