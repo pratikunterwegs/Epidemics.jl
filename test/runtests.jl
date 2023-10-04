@@ -8,8 +8,15 @@ using DataFrames
     n_age_groups = 3.0
     n_compartments = 5 #SEIRV
 
+    # create a dummy population and infection
+    population = Population()
+    infection = Infection()
+
     # run the model
-    data = epidemic_default(time_end = time_end, increment = 1.0)
+    data = epidemic_default(population = population,
+        infection = infection,
+        time_end = time_end,
+        increment = 1.0)
 
     # convert to data.frame and apply `prepare_data`
     data = prepare_data(ode_solution_df = DataFrame(data), n_age_groups = 3)
@@ -42,7 +49,7 @@ end
     @test_throws AssertionError default_initial_conditions(p_exposed = [-1e-6])
     # p_infected and p_exposed outside limits
     @test_throws AssertionError default_initial_conditions(p_infected = [0.5],
-                                                           p_exposed = [0.6])
+        p_exposed = [0.6])
 end
 
 # tests for helpers to convert parameters
