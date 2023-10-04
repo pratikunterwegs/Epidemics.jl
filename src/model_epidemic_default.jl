@@ -95,9 +95,9 @@ function epidemic_default(;
         # check type
         @assert isa(intervention, Npi) "`intervention` must be of type Npi"
         # expect that the intervention is compatible with the population
-        @assert size(intervention.contact_reduction)[1]==
-                length(population.demography_vector)|size(intervention.contact_reduction)[1]==
-                1 "`intervention` 'contact_reduction' member rows must match the number of demography groups in `population`"
+        @assert (size(intervention.contact_reduction)[1] ==
+                 length(population.demography_vector))|(size(intervention.contact_reduction)[1] ==
+                                                        1) "`intervention` 'contact_reduction' member rows must match the number of demography groups in `population`"
     end
 
     if isnothing(vaccination)
