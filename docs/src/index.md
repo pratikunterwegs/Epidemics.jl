@@ -38,19 +38,11 @@ pop = Population(
     contact_matrix = ones(3, 3) * 5
 )
 
-# an infection similar to pandemic influenza
-pandemic = Infection(
-    r0 = 1.5,
-    infectious_period = 7,
-    extra_arguments = (
-        preinfectious_period = 2,
-    )
-)
-
 # run the default model with 3 age groups, but no intervention or vaccination
 data = epidemic_default(
+    r0 = 1.3, infectious_period = 7,
+    preinfectious_period = 2,
     population = pop,
-    infection = pandemic,
     time_end = sim_time_end, increment=1.0
 )
 
@@ -95,15 +87,6 @@ pop = Population(
     initial_conditions = [1 - 1e-6 0.0 1e-6 0.0 0.0; 1 - 1e-6 0.0 1e-6 0.0 0.0; 1 - 1e-6 0.0 1e-6 0.0 0.0],
     contact_matrix = ones(3, 3) * 5
 )
-
-# an infection similar to pandemic influenza
-pandemic = Infection(
-    r0 = 1.5,
-    infectious_period = 7,
-    extra_arguments = (
-        preinfectious_period = 2,
-    )
-)
 ```
 
 ```@example simple_contacts_intervention
@@ -116,15 +99,17 @@ intervention = Npi(
 
 # run a model with no intervention or vaccination
 data_baseline = epidemic_default(
+    r0 = 1.3, infectious_period = 7,
+    preinfectious_period = 2,
     population = pop,
-    infection = pandemic,
     time_end = sim_time_end, increment = 1.0
 )
 
 # run the default model with 3 age groups, intervention, no vaccination
 data = epidemic_default(
+    r0 = 1.3, infectious_period = 7,
+    preinfectious_period = 2,
     population = pop,
-    infection = pandemic,
     intervention = intervention,
     time_end = sim_time_end, increment = 1.0
 )

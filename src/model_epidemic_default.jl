@@ -1,9 +1,7 @@
 
 include("helpers.jl")
 include("intervention.jl")
-include("pathogen.jl")
 include("vaccination.jl")
-include("prepare_args_default.jl")
 include("prepare_data.jl")
 
 using OrdinaryDiffEq
@@ -15,8 +13,8 @@ A simple SEIRV epidemic model function that allows for multiple demographic
 groups. This function is intended to be called internally from
 [`epidemic_default`](@ref).
 
-The function expects the `parameters` argument to be a four element vector
-with the following elements:
+The function expects the `parameters` argument to be a four element vector or
+tuple with the following elements (which do not have to be named):
 
 - a `Population` object with a prepared contact matrix, see [`Population`]
 (@ref);
@@ -67,7 +65,8 @@ function epidemic_default_ode!(du, u, parameters, t)
 end
 
 """
-    epidemic_default(population, infection, intervention, vaccination,
+    epidemic_default(r0, infectious_period, preinfectious_period,
+        population, intervention, vaccination,
         time_end, increment
     )
 
@@ -77,8 +76,10 @@ specific effects, and group-specific vaccination regimes.
     
 """
 function epidemic_default(;
+    r0::Number,
+    infectious_period::Number,
+    preinfectious_period::Number,
     population::Population,
-    infection::Infection,
     intervention = nothing,
     vaccination = nothing,
     time_end::Number = 200.0,
@@ -112,11 +113,16 @@ function epidemic_default(;
     # prepare the initial conditions
     init = prepare_initial_conditions(population = population)
 
+    # prepare population contact matrix
+    population.contact_matrix = prepare_contact_matrix(population = population)
+
     # prepare parameters
-    parameters = prepare_args_default(population = population,
-        infection = infection,
-        intervention = intervention,
-        vaccination = vaccination)
+    parameters = tuple(population,
+        r0_to_beta(r0 = r0, infectious_period = infectious_period),
+        preinfectious_period_to_alpha(preinfectious_period = preinfectious_period),
+        infectious_period_to_gamma(infectious_period = infectious_period),
+        intervention,
+        vaccination)
 
     # prepare the timespan
     timespan = (0.0, time_end)
