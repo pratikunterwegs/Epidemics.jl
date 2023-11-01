@@ -10,11 +10,11 @@ using DataFrames
 
     # create a dummy population and infection
     population = Population()
-    infection = Infection()
 
     # run the model
-    data = epidemic_default(population = population,
-        infection = infection,
+    data = epidemic_default(r0 = 1.3, infectious_period = 7,
+        preinfectious_period = 2,
+        population = population,
         time_end = time_end,
         increment = 1.0)
 
