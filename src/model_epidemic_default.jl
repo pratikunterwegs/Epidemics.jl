@@ -16,10 +16,9 @@ groups. This function is intended to be called internally from
 The function expects the `parameters` argument to be a four element vector or
 tuple with the following elements (which do not have to be named):
 
-- a `Population` object with a prepared contact matrix, see [`Population`]
-(@ref);
+- a `Population` object with a prepared contact matrix, see [`Population`](@ref);
 - ``\\beta``, the transmission rate;
-- ``\\alpha``, the rate of conversion from exposed to infectious;
+- ``\\sigma``, the rate of conversion from exposed to infectious;
 - ``\\gamma``, the rate of recovery;
 - a matrix specifying the contacts between demographic groups;
 - an `Npi` object specifying the intervention applied to each age
@@ -65,7 +64,7 @@ function epidemic_default_ode!(du, u, parameters, t)
 end
 
 """
-    epidemic_default(r0, infectious_period, preinfectious_period,
+    epidemic_default(β, σ, γ,
         population, intervention, vaccination,
         time_end, increment
     )
@@ -73,22 +72,41 @@ end
 Model the progression of an epidemic, with age- or demographic-group specific
 contact patterns and proportions, non-pharmaceutical interventions with group-
 specific effects, and group-specific vaccination regimes.
+
+## Arguments
+
+- β: the transmissibility of the disease;
+- σ: the rate of transition from the exposed to the infectious compartment;
+- γ: the recovery rate.
+
+- `population`: A `Population` with population characteristics;
+- `intervention`: An `Npi` for interventions on social contacts;
+- `vaccination`: A `Vaccination` for the vaccination regime applied;
+- `time_end`: The time in days at which to end the simulation, defaults to 200;
+- `increment`: The increment in simulation time, defaults to 1.0.
+
     
 """
 function epidemic_default(;
-    r0::Number,
-    infectious_period::Number,
-    preinfectious_period::Number,
-    population::Population,
-    intervention = nothing,
-    vaccination = nothing,
-    time_end::Number = 200.0,
-    increment::Number = 0.1)
+        β::Number, σ::Number, γ::Number,
+        population::Population,
+        intervention = nothing,
+        vaccination = nothing,
+        time_end::Number = 200.0,
+        increment::Number = 1.0)
 
     # input checking
     @assert increment<time_end "`increment` must be less than `time_end`"
     @assert increment>0.0 "`increment` must be a positive number"
     @assert time_end>0.0 "`time_end` must be a positive number"
+
+    @assert β > 0.0&&β < Inf "β must be a finite positive number"
+    @assert σ > 0.0&&σ < Inf "σ must be a finite positive number"
+    @assert γ > 0.0&&γ < Inf "γ must be a finite positive number"
+
+    # check that population has the right number of compartments
+    compartments = 5
+    @assert size(population.initial_conditions)[2]==compartments "`population` must have 5 compartments"
 
     if isnothing(intervention)
         intervention = no_intervention()
@@ -118,9 +136,7 @@ function epidemic_default(;
 
     # prepare parameters
     parameters = tuple(population,
-        r0_to_beta(r0 = r0, infectious_period = infectious_period),
-        preinfectious_period_to_alpha(preinfectious_period = preinfectious_period),
-        infectious_period_to_gamma(infectious_period = infectious_period),
+        β, σ, γ,
         intervention,
         vaccination)
 
