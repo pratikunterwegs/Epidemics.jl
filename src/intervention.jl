@@ -31,7 +31,7 @@ mutable struct Npi
 end
 
 function Npi(; time_begin::Number = 50, time_end::Number = 80,
-             contact_reduction::Vector = [0.25])
+        contact_reduction::Vector = [0.25])
     # convert contact reduction to a matrix with one column
     contact_reduction = reshape(contact_reduction, length(contact_reduction), 1)
     return Npi([time_begin], [time_end], contact_reduction)
