@@ -96,7 +96,7 @@ function epidemic_vacamole(;
     eta::Number, omega::Number,
     susc_reduction_vax::Number,
     hosp_reduction_vax::Number,
-    mort_reduction_vax::Number
+    mort_reduction_vax::Number,
     population::Population,
     intervention = nothing,
     vaccination = nothing,
