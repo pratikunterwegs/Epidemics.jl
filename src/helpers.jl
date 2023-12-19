@@ -53,8 +53,8 @@ A matrix with the dimensions `n_groups * 5`, with each row representing a
     epidemiological compartments of the default model.
 """
 function default_initial_conditions(; n_groups::Number = 3,
-                                    p_infected::Vector = [1e-6, 1e-6, 1e-6],
-                                    p_exposed::Vector = [0.0, 0.0, 0.0])
+        p_infected::Vector = [1e-6, 1e-6, 1e-6],
+        p_exposed::Vector = [0.0, 0.0, 0.0])
     @assert all(p_infected .>= 0.0)&&all(p_infected .<= 1.0) "Argument `p_infected` must have values between 0.0 and 1.0."
     @assert all(p_exposed .>= 0.0)&&all(p_exposed .<= 1.0) "Argument `p_exposed` must have values between 0.0 and 1.0."
     @assert all((p_infected .+ p_exposed) .<= 1.0) "Sum of proportion infected and exposed cannot be greater than 1.0"
@@ -90,6 +90,7 @@ end
 Prepare initial conditions from a `Population` object.
 
 ## Named Arguments
+
 - `population`: A `Population` object with information about the population
     affected by the epidemic. Must include a matrix of initial conditions, and
     a demography vector.
@@ -114,10 +115,9 @@ Calculate the transmission rate ``\\beta`` from the basic reproductive number
 
 ## Named Arguments
 
-- `r0`: A single number for the basic reproduction number of an infection.
-
-- `infectious_period`: A single number for the mean duration in days that
-individuals are infectious.
+- `r0`: A single number for the basic reproduction number of an infection;
+- `infectious_period`: A single number for the mean duration in days that 
+    individuals are infectious.
 
 ## Returns
 A single number representing the transmission rate of the infection ``\\beta``
@@ -138,7 +138,7 @@ occurrence of symptoms.
 ## Named Arguments
 
 - `preinfectious_period`: A single number for the mean duration in days between
-individuals being exposed to infection and becoming infectious.
+    individuals being exposed to infection and becoming infectious.
 
 ## Returns
 A single number representing the transmission rate of the infectious ``\\alpha``
@@ -157,7 +157,7 @@ period.
 ## Named Arguments
 
 - `infectious_period`: A single number for the mean duration in days that
-individuals are infectious.
+    individuals are infectious.
 
 ## Returns
 A single number representing the recovery rate of the infectious ``\\gamma``
@@ -167,5 +167,6 @@ function infectious_period_to_gamma(; infectious_period::Number)
     return 1.0 / infectious_period
 end
 
-export default_initial_conditions, r0_to_beta, preinfectious_period_to_alpha,
-       infectious_period_to_gamma
+export default_initial_conditions,
+    r0_to_beta, preinfectious_period_to_alpha,
+    infectious_period_to_gamma
