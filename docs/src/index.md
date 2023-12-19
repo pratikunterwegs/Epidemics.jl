@@ -18,7 +18,7 @@ using Epidemics
 time_end = 500.0
 
 # benchmark the default model with 3 age groups, intervention, and vaccination
-@benchmark epidemic_default(r0 = 1.5, infectious_period = 7, preinfectious_period = 2, population = Population(), time_end=time_end, increment=1.0)
+@benchmark epidemic_default(β=1.3/7, σ=0.5, γ=1/7, population = Population(), time_end=time_end, increment=1.0)
 ```
 
 ## Get started
@@ -38,10 +38,18 @@ pop = Population(
     contact_matrix = ones(3, 3) * 5
 )
 
+# make model parameters using helpers
+r0 = 1.5
+infectious_period = 7
+preinfectious_period = 2
+
+β = r0_to_beta(r0 = r0, infectious_period = infectious_period)
+σ = preinfectious_period_to_alpha(preinfectious_period = preinfectious_period)
+γ = infectious_period_to_gamma(infectious_period = infectious_period)
+
 # run the default model with 3 age groups, but no intervention or vaccination
 data = epidemic_default(
-    r0 = 1.5, infectious_period = 7,
-    preinfectious_period = 2,
+    β=β, σ=σ, γ=γ,
     population = pop,
     time_end = sim_time_end, increment=1.0
 )
@@ -97,18 +105,25 @@ intervention = Npi(
     contact_reduction = [0.3, 0.1, 0.1]
 )
 
+# make model parameters using helpers
+r0 = 1.5
+infectious_period = 7
+preinfectious_period = 2
+
+β = r0_to_beta(r0 = r0, infectious_period = infectious_period)
+σ = preinfectious_period_to_alpha(preinfectious_period = preinfectious_period)
+γ = infectious_period_to_gamma(infectious_period = infectious_period)
+
 # run a model with no intervention or vaccination
 data_baseline = epidemic_default(
-    r0 = 1.5, infectious_period = 7,
-    preinfectious_period = 2,
+    β=β, σ=σ, γ=γ,
     population = pop,
     time_end = sim_time_end, increment = 1.0
 )
 
 # run the default model with 3 age groups, intervention, no vaccination
 data = epidemic_default(
-    r0 = 1.5, infectious_period = 7,
-    preinfectious_period = 2,
+    β=β, σ=σ, γ=γ,
     population = pop,
     intervention = intervention,
     time_end = sim_time_end, increment = 1.0
