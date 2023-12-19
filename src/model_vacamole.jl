@@ -139,7 +139,7 @@ function epidemic_vacamole(;
         intervention = nothing,
         vaccination = nothing,
         time_end::Number = 200.0,
-        increment::Number = 0.1)
+        increment::Number = 1.0)
 
     # input checking
     @assert increment<time_end "`increment` must be less than `time_end`"
