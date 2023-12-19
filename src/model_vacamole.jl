@@ -43,7 +43,7 @@ tuple with the following elements (which do not have to be named):
 """
 function epidemic_vacamole_ode!(du, u, parameters, t)
     # assumes that each element of the vector is one of the required params
-    population, β, βv, α, η, ηv, ω, ωv, γ, intervention, vaccination = parameters
+    population, β, βv, σ, η, ηv, ω, ωv, γ, intervention, vaccination = parameters
 
     # modify contact matrix if the intervention is active
     contact_matrix = population.contact_matrix .*
