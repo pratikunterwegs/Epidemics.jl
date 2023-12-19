@@ -85,7 +85,7 @@ end
 @testset "Vacamole model return type" begin
     time_end = 100.0
     n_age_groups = 3.0
-    n_compartments = 5 #SEIRV
+    n_compartments = 11 #Vacamole config
 
     # create a dummy population and infection
     population = Population(demography_vector = 10e6 .* [0.2, 0.5, 0.3],
