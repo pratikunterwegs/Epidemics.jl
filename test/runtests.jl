@@ -110,7 +110,10 @@ end
         increment = 1.0)
 
     # convert to data.frame and apply `prepare_data`
-    data = prepare_data(ode_solution_df = DataFrame(data), n_age_groups = 3)
+    data = prepare_data(ode_solution_df = DataFrame(data), n_age_groups = 3,
+        compartment_names = ["susceptible", "vax_one_dose", "vax_two_dose",
+            "exposed", "exposed_vax", "infectious", "infectious_vax",
+            "hospitalised", "hospitalised_vax", "dead", "recovered"])
 
     @test typeof(data) == DataFrames.DataFrame
     @test size(data, 2) == 4 # test for four cols
