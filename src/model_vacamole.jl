@@ -1,8 +1,4 @@
-
-include("helpers.jl")
-include("intervention.jl")
-include("vaccination.jl")
-include("prepare_data.jl")
+# NOTE: modules already included in default model
 
 using OrdinaryDiffEq
 
