@@ -34,12 +34,16 @@ function epidemic_stochastic(;
     data = zeros(Number, length(timesteps), n_compartments)
     data[1, :] = [n_susceptibles, n_infectious, n_recovered]
 
+    # precalculate transmission rate and recovery rate
+    β_ = β / population_size * time_increment
+    p_recovery = 1.0 - exp(-σ * time_increment)
+
     # loop over time in increments specified
     for t in 2:length(timesteps)
         # recalculate p(infect) as n_infectious changes
-        p_infect = 1 - exp(-β * n_infectious / population_size * time_increment)
+        p_infect = 1.0 - exp(-β_ * n_infectious)
         new_infections = rand(Binomial(n_susceptibles, p_infect))
-        new_recoveries = rand(Binomial(n_infectious, σ * time_increment))
+        new_recoveries = rand(Binomial(n_infectious, p_recovery))
 
         n_susceptibles = n_susceptibles - new_infections
         n_infectious = n_infectious + new_infections - new_recoveries
