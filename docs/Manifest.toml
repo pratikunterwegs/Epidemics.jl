@@ -361,7 +361,7 @@ uuid = "f151be2c-9106-41f4-ab19-57ee4f262869"
 version = "0.6.3"
 
 [[Epidemics]]
-deps = ["DataFrames", "LinearAlgebra", "OrdinaryDiffEq"]
+deps = ["DataFrames", "Distributions", "LinearAlgebra", "OrdinaryDiffEq", "Random"]
 path = ".."
 uuid = "3842d2e4-6389-40c1-b4a0-39a6a39a1f90"
 version = "0.0.9"
