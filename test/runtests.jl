@@ -127,3 +127,30 @@ end
     final_pop = sum(filter(:timestamp => x -> x == time_end, data).value)
     @test initial_pop≈final_pop atol=1e-6
 end
+
+@testset "Stochastic model" begin
+    # run the stochastic model
+    time_end = 5
+    increment = 0.01
+    pop_size = 1000
+    data = epidemic_stochastic(population_size = pop_size,
+        time_end = time_end,
+        time_increment = increment)
+
+    @test isa(data, DataFrame)
+    @test size(data, 2) == 4 # test for four cols - this is wide format
+    @test size(data, 1) == (1 + (time_end / increment))
+
+    # expect all values are positive or zero
+    @test all(data.susceptible .>= 0.0 .&& data.susceptible .<= pop_size)
+    @test all(data.infectious .>= 0.0 .&& data.infectious .<= pop_size)
+    @test all(data.recovered .>= 0.0 .&& data.recovered .<= pop_size)
+
+    # test that final values sum to the same as initial values
+    initial_pop = sum(data[1, 1:3])
+    final_pop = sum(last(data[!, 1:3]))
+    @test initial_pop≈final_pop atol=1e-6
+
+    # test that population constant through the simulation
+    @test all(sum.(eachrow(data[!, 1:3])) .≈ pop_size)
+end
