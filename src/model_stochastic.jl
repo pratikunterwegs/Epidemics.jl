@@ -56,3 +56,23 @@ function epidemic_stochastic(;
     return data
 end
 
+function run_replicates(replicates = 100, fn = epidemic_stochastic; args...)
+    @assert isa(replicates, Number)&&isfinite(replicates) && (replicates > 0) "`replicates` must be a finite positive number"
+    @assert isa(fn, Function) "`fn` must be a function"
+
+    data = [DataFrame() for i in 1:replicates]
+
+    for i in 1:replicates
+        df = fn(; args...)
+        # add replicate number
+        df.replicate .= i
+        data[i] = df
+    end
+
+    # bind data
+    data = vcat(data...)
+
+    return data
+end
+
+export epidemic_stochastic, run_replicates
