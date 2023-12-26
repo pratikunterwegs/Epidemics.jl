@@ -8,15 +8,20 @@ This section shows how to run the simple discrete-time, stochastic compartmental
 
 ## Get started with a single run
 
+Here we see how to use `epidemic_stochastic()` to run a single realisation of the stochastic model.
+
 ```@example
 using Epidemics
 using Gadfly
 using DataFrames
+using Random
 
 # end simulation time at 5.0 time units
 sim_time_end = 5.0
 
 # run the model with slightly modified parameters from the defaults
+Random.seed!(1) # set a seed
+
 data = epidemic_stochastic(
     population_size = 1010,
     n_infectious = 20, n_recovered = 30,
@@ -46,15 +51,24 @@ plot(
 
 ## Run multiple replicates
 
+Here we see how to use `run_replicates()` to run a multiple realisations of the stochastic model in `epidemic_stochastic()`.
+
+`run_replicates()` takes the function name (such as `epidemic_stochastic`), the number of replicates, and any number of function arguments for the epidemic model function.
+
+Here, we run 100 replicates of the stochastic model, passing the same arguments as in the previous example.
+
 ```@example
 using Epidemics
 using Gadfly
 using DataFrames
+using Random
 
 # end simulation time at 5.0 time units
 sim_time_end = 5.0
 
 # run the model with slightly modified parameters from the defaults
+Random.seed!(1) # set a seed
+
 data = run_replicates(
     epidemic_stochastic, 100,
     population_size = 1010,
