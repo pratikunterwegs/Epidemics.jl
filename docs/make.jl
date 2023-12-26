@@ -15,6 +15,7 @@ makedocs(;
                                   assets = String[]),
          pages = [
              "Home" => "index.md",
+             "Stochastic model" => "stochastic_model.md",
          ])
 
 deploydocs(;
