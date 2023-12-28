@@ -142,9 +142,9 @@ end
     @test size(data, 1) == (1 + (time_end / increment))
 
     # expect all values are positive or zero
-    @test all((data[:, "susceptible"] .>= 0.0) .&& (data[:, "susceptible"] .<= pop_size))
-    @test all((data[:, "infectious"] .>= 0.0) .&& (data[:, "infectious"] .<= pop_size))
-    @test all((data[:, "recovered"] .>= 0.0) .&& (data[:, "recovered"] .<= pop_size))
+    @test all(data[:, "susceptible"] .>= 0.0) && all(data[:, "susceptible"] .<= pop_size)
+    @test all(data[:, "infectious"] .>= 0.0) && all(data[:, "infectious"] .<= pop_size)
+    @test all(data[:, "recovered"] .>= 0.0) && all(data[:, "recovered"] .<= pop_size)
 
     # test that final values sum to the same as initial values
     initial_pop = sum(data[1, 1:3])
