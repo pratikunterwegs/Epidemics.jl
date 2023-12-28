@@ -101,8 +101,10 @@ A `DataFrame` in long format with four columns, "time", "compartment", "value",
     and "replicate", for the values of each compartment at each time point in
     each replicate of the simulation run by `model_fn`.
 """
-function run_replicates(model_fn::Function = epidemic_stochastic, replicates::Number = 100; args...)
-    @assert isfinite(replicates) && (replicates > 0) "`replicates` must be a finite positive number"
+function run_replicates(model_fn::Function = epidemic_stochastic,
+        replicates::Number = 100;
+        args...)
+    @assert isfinite(replicates)&&(replicates > 0) "`replicates` must be a finite positive number"
 
     data = [DataFrame() for i in 1:replicates]
 
@@ -110,7 +112,7 @@ function run_replicates(model_fn::Function = epidemic_stochastic, replicates::Nu
     for i in 1:replicates
         df = model_fn(; args...)
         # add replicate number
-        df.replicate .= i
+        df[:, :replicate] .= i
         data[i] = df
     end
 
