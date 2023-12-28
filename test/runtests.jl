@@ -142,9 +142,9 @@ end
     @test size(data, 1) == (1 + (time_end / increment))
 
     # expect all values are positive or zero
-    @test all(data.susceptible .>= 0.0 .&& data.susceptible .<= pop_size)
-    @test all(data.infectious .>= 0.0 .&& data.infectious .<= pop_size)
-    @test all(data.recovered .>= 0.0 .&& data.recovered .<= pop_size)
+    @test all((data.susceptible .>= 0.0) .&& (data.susceptible .<= pop_size))
+    @test all((data.infectious .>= 0.0) .&& (data.infectious .<= pop_size))
+    @test all((data.recovered .>= 0.0) .&& (data.recovered .<= pop_size))
 
     # test that final values sum to the same as initial values
     initial_pop = sum(data[1, 1:3])
@@ -153,4 +153,19 @@ end
 
     # test that population constant through the simulation
     @test all(sum.(eachrow(data[!, 1:3])) .≈ pop_size)
+end
+
+@testset "Run replicates" begin
+    n_replicates = 10
+    time_end = 5.0
+    time_increment = 1.0
+    data = run_replicates(epidemic_stochastic, n_replicates,
+        time_end = time_end, time_increment = time_increment)
+
+    # test for dataframe of 4 cols and n_replicates * compartments * total timesteps rows
+    n_compartments = 3
+    @test isa(data, DataFrame)
+    @test size(data, 2) == 4
+    @test size(data, 1) ==
+          n_replicates * ((time_end + 1.0) / time_increment) * n_compartments
 end
