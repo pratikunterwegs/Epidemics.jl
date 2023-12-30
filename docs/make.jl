@@ -15,7 +15,10 @@ makedocs(;
                                   assets = String[]),
          pages = [
              "Home" => "index.md",
+             "Get started" => "epidemics.md",
+             "Modelling interventions" => "intervention.md",
              "Stochastic model" => "stochastic_model.md",
+             "Benchmarking" => "benchmarking.md"
          ])
 
 deploydocs(;

@@ -2,168 +2,33 @@
 CurrentModule = Epidemics
 ```
 
-# Epidemics
+# Epidemics.jl
 
-Documentation for [Epidemics](https://github.com/pratikunterwegs/Epidemics.jl).
+This is some minimal documentation for [Epidemics.jl](https://github.com/pratikunterwegs/Epidemics.jl).
+**Note** that this is a personal project, and comes with no current or future support.
+This documentation section is intended as a learning experience (for me) in writing Julia package documentation.
 
-## Benchmarking
+[![License:MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://pratikunterwegs.github.io/Epidemics.jl/dev/)
+[![Build Status](https://github.com/pratikunterwegs/Epidemics.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/pratikunterwegs/Epidemics.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/pratikunterwegs/Epidemics.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/pratikunterwegs/Epidemics.jl)
+[![SciML Code Style](https://img.shields.io/static/v1?label=code%20style&message=SciML&color=9558b2&labelColor=389826)](https://github.com/SciML/SciMLStyle)
 
-This section shows some benchmarking.
+_Epidemics.jl_ is a Julia package that aims to mirror the [R package {epidemics}](https://github.com/epiverse-trace/epidemics), and to provide a robust way to model epidemic and disease outbreak scenarios.
+_Epidemics.jl_ is a work in progress since it lags the development of _epidemics_.
 
-```@example
-using BenchmarkTools
-using Epidemics
+**Note** _Epidemics.jl_ is a personal project where I aim to learn more about the Julia language; it comes with no guarantees of current or future support or maintenance.
 
-# an epidemic of 500 days
-time_end = 500.0
+_Epidemics.jl_ currently has basic implementations of three models, roughly tracking the R package {epidemics}.
 
-# benchmark the default model with 3 age groups, intervention, and vaccination
-@benchmark epidemic_default(β=1.3/7, σ=0.5, γ=1/7, population = Population(), time_end=time_end, increment=1.0)
-```
+1. `epidemic_default()`: the default model, which is an SEIRV compartmental ODE model allowing for a vaccination regime that confers full immunity with a single dose, as well as (optionally) multiple overlapping interventions to reduce social contacts;
 
-## Get started
+2. `epidemic_vacamole()`: the Vacamole model developed by RIVM for the Covid-19 pandemic, which is a work in progress, but will eventually allow for two-dose leaky vaccination, as well as multiple overlapping interventions;
 
-```@example
-using Epidemics
-using Gadfly
-using DataFrames
+3. `epidemic_stochastic()`: A simple stochastic compartmental SIR model.
 
-# an epidemic of 500 days
-sim_time_end = 500.0
-
-# population of 10 million in three age groups
-pop = Population(
-    demography_vector = 10e6 .* [0.2, 0.5, 0.3],
-    initial_conditions = [1 - 1e-6 0.0 1e-6 0.0 0.0; 1 - 1e-6 0.0 1e-6 0.0 0.0; 1 - 1e-6 0.0 1e-6 0.0 0.0],
-    contact_matrix = ones(3, 3) * 5
-)
-
-# make model parameters using helpers
-r0 = 1.5
-infectious_period = 7
-preinfectious_period = 2
-
-β = r0_to_beta(r0 = r0, infectious_period = infectious_period)
-σ = preinfectious_period_to_alpha(preinfectious_period = preinfectious_period)
-γ = infectious_period_to_gamma(infectious_period = infectious_period)
-
-# run the default model with 3 age groups, but no intervention or vaccination
-data = epidemic_default(
-    β=β, σ=σ, γ=γ,
-    population = pop,
-    time_end = sim_time_end, increment=1.0
-)
-
-# convert to dataframe
-data_output = DataFrame(data)
-
-# WIP - function to handle data with correct naming
-data_output = prepare_data(ode_solution_df = data_output, n_age_groups = 3)
-
-# filter data for infectious only
-data_infectious = filter(:compartment => n -> n == "infectious", data_output)
-
-plot(
-    data_infectious, 
-    x = "timestamp",
-    y = "value", 
-    color = "demo_group", 
-    Geom.line,
-    Guide.xlabel("Time"),
-    Guide.ylabel("Individuals infectious"),
-    Guide.colorkey("Demographic group"),
-    Scale.x_continuous(minvalue=100, maxvalue=500),
-    Theme(
-        key_position=:top
-    )
-)
-```
-
-## Modelling an intervention on social contacts
-
-```@setup simple_contacts_intervention
-using Epidemics
-using Gadfly
-using DataFrames
-
-# an epidemic of 300 days
-sim_time_end = 500.0
-
-# population of 10 million in three age groups
-pop = Population(
-    demography_vector = 10e6 .* [0.2, 0.5, 0.3],
-    initial_conditions = [1 - 1e-6 0.0 1e-6 0.0 0.0; 1 - 1e-6 0.0 1e-6 0.0 0.0; 1 - 1e-6 0.0 1e-6 0.0 0.0],
-    contact_matrix = ones(3, 3) * 5
-)
-```
-
-```@example simple_contacts_intervention
-# an intervention that reduces contacts by 50%, 20% and 60% for each age group
-# respectively
-intervention = Npi(
-    time_begin = 200, time_end = 230, 
-    contact_reduction = [0.3, 0.1, 0.1]
-)
-
-# make model parameters using helpers
-r0 = 1.5
-infectious_period = 7
-preinfectious_period = 2
-
-β = r0_to_beta(r0 = r0, infectious_period = infectious_period)
-σ = preinfectious_period_to_alpha(preinfectious_period = preinfectious_period)
-γ = infectious_period_to_gamma(infectious_period = infectious_period)
-
-# run a model with no intervention or vaccination
-data_baseline = epidemic_default(
-    β=β, σ=σ, γ=γ,
-    population = pop,
-    time_end = sim_time_end, increment = 1.0
-)
-
-# run the default model with 3 age groups, intervention, no vaccination
-data = epidemic_default(
-    β=β, σ=σ, γ=γ,
-    population = pop,
-    intervention = intervention,
-    time_end = sim_time_end, increment = 1.0
-)
-
-# convert to dataframe
-data_baseline = DataFrame(data_baseline)
-data_output = DataFrame(data)
-
-# function to handle data with correct naming
-data_baseline = prepare_data(ode_solution_df = data_baseline, n_age_groups = 3)
-data_output = prepare_data(ode_solution_df = data_output, n_age_groups = 3)
-
-# assign scenario and combine
-data_baseline[!, :scenario] .= "baseline"
-data_output[!, :scenario] .= "intervention"
-
-data = vcat(data_baseline, data_output)
-
-# filter data for infectious only
-data_infectious = filter(:compartment => n -> n == "infectious", data)
-
-plot(
-    data_infectious, 
-    x = "timestamp",
-    y = "value", 
-    color = "demo_group",
-    linestyle = "scenario",
-    Geom.line,
-    Guide.xlabel("Time"),
-    Guide.ylabel("Individuals infectious"),
-    Guide.colorkey("Demographic group"),
-    Scale.x_continuous(minvalue=100, maxvalue=500),
-    Theme(
-        key_position=:top
-    )
-)
-```
-
-The example here shows how implementing a non-pharmaceutical intervention can reduce the number of infectious individuals in the population.
+_Epidemics.jl_ is likely to include the Ebola model, as well as features such as time-dependence and rate interventions, from {epidemics} at some point.
 
 ## Index
 
