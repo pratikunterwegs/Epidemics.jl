@@ -2,8 +2,6 @@
 CurrentModule = Epidemics
 ```
 
-## Get started
-
 ### Installing Epidemics.jl
 
 _Epidemics.jl_ can be installed from GitHub using the Julia package manager _Pkg.jl_.
@@ -13,7 +11,7 @@ using Pkg
 Pkg.add(url="git@github.com:pratikunterwegs/Epidemics.jl.git")
 ```
 
-### Running a simple model
+## Running the default model
 
 ```@example
 using Epidemics

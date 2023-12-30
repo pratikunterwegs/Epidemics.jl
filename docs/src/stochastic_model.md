@@ -2,9 +2,7 @@
 CurrentModule = Epidemics
 ```
 
-## Stochastic SIR model
-
-This section shows how to run the simple discrete-time, stochastic compartmental model included in Epidemics.jl.
+This section shows how to run the simple discrete-time, stochastic SIR compartmental model included in Epidemics.jl.
 
 ## Get started with a single run
 

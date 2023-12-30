@@ -2,7 +2,7 @@
 CurrentModule = Epidemics
 ```
 
-## Modelling an intervention on social contacts
+This section shows how to set up and use the `Npi` struct to model interventions on social contacts.
 
 ```@setup simple_contacts_intervention
 using Epidemics
