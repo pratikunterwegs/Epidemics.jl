@@ -25,6 +25,16 @@ A `DataFrame` with four columns, "time", "susceptible", "infectious", and "recov
     of each compartment at each time point in the simulation. The number of rows should be
     roughly equal to `time_end / time_increment` (and the initial conditions).
 
+# Examples
+```julia
+# with default arguments
+epidemic_stochastic()
+
+# with some user-sepcified named arguments
+epidemic_stochastic(population_size=5000, n_infectious=119,
+    β=9.9, σ=1.1
+)
+```
 """
 function epidemic_stochastic(;
         population_size::Number = 1000,
@@ -100,6 +110,15 @@ Run any model function multiple times while passing keyword arguments. Especiall
 A `DataFrame` in long format with four columns, "time", "compartment", "value",
     and "replicate", for the values of each compartment at each time point in
     each replicate of the simulation run by `model_fn`.
+
+# Examples
+```julia
+# pass some arguments to epidemic_stochastic()
+run_replicates(epidemic_stochastic, 100,
+    population_size=1000, n_infectious=10,
+    β=10, σ=1
+)
+```
 """
 function run_replicates(model_fn::Function = epidemic_stochastic,
         replicates::Number = 100;
