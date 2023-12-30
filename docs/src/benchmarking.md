@@ -2,8 +2,6 @@
 CurrentModule = Epidemics
 ```
 
-## Benchmarking
-
 This section shows some benchmarking.
 
 ```@example
