@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Stochastic model · Epidemics.jl</title><meta name="title" content="Stochastic model · Epidemics.jl"/><meta property="og:title" content="Stochastic model · Epidemics.jl"/><meta property="twitter:title" content="Stochastic model · Epidemics.jl"/><meta name="description" content="Documentation for Epidemics.jl."/><meta property="og:description" content="Documentation for Epidemics.jl."/><meta property="twitter:description" content="Documentation for Epidemics.jl."/><meta property="og:url" content="https://pratikunterwegs.github.io/Epidemics.jl/stochastic_model/"/><meta property="twitter:url" content="https://pratikunterwegs.github.io/Epidemics.jl/stochastic_model/"/><link rel="canonical" href="https://pratikunterwegs.github.io/Epidemics.jl/stochastic_model/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">Epidemics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../epidemics/">Get started</a></li><li><a class="tocitem" href="../intervention/">Modelling interventions</a></li><li class="is-active"><a class="tocitem" href>Stochastic model</a><ul class="internal"><li><a class="tocitem" href="#Get-started-with-a-single-run"><span>Get started with a single run</span></a></li><li><a class="tocitem" href="#Run-multiple-replicates"><span>Run multiple replicates</span></a></li></ul></li><li><a class="tocitem" href="../benchmarking/">Benchmarking</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Stochastic model</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Stochastic model</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/pratikunterwegs/Epidemics.jl/blob/main/docs/src/stochastic_model.md#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><p>This section shows how to run the simple discrete-time, stochastic SIR compartmental model included in Epidemics.jl.</p><h2 id="Get-started-with-a-single-run"><a class="docs-heading-anchor" href="#Get-started-with-a-single-run">Get started with a single run</a><a id="Get-started-with-a-single-run-1"></a><a class="docs-heading-anchor-permalink" href="#Get-started-with-a-single-run" title="Permalink"></a></h2><p>Here we see how to use <code>epidemic_stochastic()</code> to run a single realisation of the stochastic model.</p><pre><code class="language-julia hljs">using Epidemics
+using Gadfly
+using DataFrames
+using Random
+
+# end simulation time at 5.0 time units
+sim_time_end = 5.0
+
+# run the model with slightly modified parameters from the defaults
+Random.seed!(1) # set a seed
+
+data = epidemic_stochastic(
+    population_size = 1010,
+    n_infectious = 20, n_recovered = 30,
+    β = 9.9, σ = 1.01,
+    time_end = sim_time_end,
+    time_increment = 0.02
+)
+
+# pivot the data to long format and plot
+data = stack(data, Not(:time))
+rename!(data, :variable =&gt; :compartment)
+
+plot(
+    data,
+    x = &quot;time&quot;,
+    y = &quot;value&quot;,
+    color = &quot;compartment&quot;,
+    Geom.line,
+    Guide.xlabel(&quot;Time&quot;),
+    Guide.ylabel(&quot;Individuals&quot;),
+    Guide.colorkey(&quot;Compartment&quot;),
+    Theme(
+        key_position=:top
+    )
+)</code></pre><img src="60fa5af0.svg" alt="Example block output"/><h2 id="Run-multiple-replicates"><a class="docs-heading-anchor" href="#Run-multiple-replicates">Run multiple replicates</a><a id="Run-multiple-replicates-1"></a><a class="docs-heading-anchor-permalink" href="#Run-multiple-replicates" title="Permalink"></a></h2><p>Here we see how to use <code>run_replicates()</code> to run a multiple realisations of the stochastic model in <code>epidemic_stochastic()</code>.</p><p><code>run_replicates()</code> takes the function name (such as <code>epidemic_stochastic</code>), the number of replicates, and any number of function arguments for the epidemic model function.</p><p>Here, we run 100 replicates of the stochastic model, passing the same arguments as in the previous example.</p><pre><code class="language-julia hljs">using Epidemics
+using Gadfly
+using DataFrames
+using Random
+
+# end simulation time at 5.0 time units
+sim_time_end = 5.0
+
+# run the model with slightly modified parameters from the defaults
+Random.seed!(1) # set a seed
+
+data = run_replicates(
+    epidemic_stochastic, 100,
+    population_size = 1010,
+    n_infectious = 20, n_recovered = 30,
+    β = 9.9, σ = 1.01,
+    time_end = sim_time_end,
+    time_increment = 0.01
+)
+
+plot(
+    data,
+    x = &quot;time&quot;,
+    y = &quot;value&quot;,
+    color = &quot;compartment&quot;,
+    group = &quot;replicate&quot;,
+    Geom.line,
+    alpha=[0.1],
+    Guide.xlabel(&quot;Time&quot;),
+    Guide.ylabel(&quot;Individuals&quot;),
+    Guide.colorkey(&quot;Compartment&quot;),
+    Coord.cartesian(ymin=0, ymax=1000),
+    Theme(
+        key_position=:top
+    )
+)</code></pre><img src="6a060888.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../intervention/">« Modelling interventions</a><a class="docs-footer-nextpage" href="../benchmarking/">Benchmarking »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.2 on <span class="colophon-date" title="Saturday 30 December 2023 17:36">Saturday 30 December 2023</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
