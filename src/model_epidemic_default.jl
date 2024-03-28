@@ -91,10 +91,11 @@ specific effects, and group-specific vaccination regimes.
     
 """
 function epidemic_default(;
-        β::Vector{Number}, σ::Vector{Number}, γ::Vector{Number},
+        β::Vector{<:Number} = [1.3 / 7.0], σ::Vector{<:Number} = [1.0 / 2.0],
+        γ::Vector{<:Number} = [1.0 / 7.0],
         population::Population,
-        intervention::Npi = nothing,
-        vaccination::Vaccination = nothing,
+        intervention = nothing,
+        vaccination = nothing,
         time_end::Number = 200.0,
         increment::Number = 1.0)
 
@@ -109,7 +110,7 @@ function epidemic_default(;
 
     # check that population has the right number of compartments
     compartments = ["susceptible", "exposed", "infectious", "recovered", "vaccinated"]
-    @assert size(population.initial_conditions)[2]==size(compartments) "`population` must have 5 compartments"
+    @assert size(population.initial_conditions)[2]==length(compartments) "`population` must have 5 compartments"
 
     if isnothing(intervention)
         intervention = no_intervention()
@@ -135,11 +136,11 @@ function epidemic_default(;
     init = prepare_initial_conditions(population = population)
 
     # prepare population contact matrix
-    population.contact_matrix = prepare_contact_matrix(population = population)
+    contact_matrix = prepare_contact_matrix(population = population)
 
     # prepare parameters
     # NOTE: population, intervention, and vaccination may only be scalars; WIP
-    parameters = make_combinations([population],
+    parameters = make_combinations([contact_matrix],
         β, σ, γ,
         [intervention],
         [vaccination])
