@@ -1,42 +1,40 @@
 
 """
-    recycle_vectors(v...)
+    make_combinations(v...)
 
-Recycles input vectors to match the length of the longest vector following
-Tidyverse rules.
+Make combinations of input vectors.
 
 # Arguments
-- `v...`: Any number of input vectors. All vectors must be of the same length,
-or all but one vector must have length 1.
+- `v...`: Any number of input `Vector`s.
 
 # Returns
-An array of vectors passed in `v...`. If all vectors in `v...` have the same
-length, returns a vector of these vectors unmodified. If vectors must be
-recycled, returns all vectors repeated for the same number of times as the
-longest vector.
+A `Vector` of `tuple`s with combinations of `Vector`s passed in `v...`.
+If all vectors in `v...` have the same length, returns a vector of tuples of
+length 1.
+Combinations are returned in ascending order of the elements of each `i`-th
+element of the input vectors.
 
 # Example
 ```julia
 vec1 = [1, 2, 3]
-vec2 = [4]
+vec2 = ["a", "b"]
 
-result = recycle_vectors(vec1, vec2)
+result = make_combinations(vec1, vec2)
+
+# note order of results
 println(result)
 """
-function recycle_vectors(v...)
-    # convert from tuple to array
-    v = [i for i in v]
-    vec_lengths = length.(v)
+function make_combinations(v...)
+    # no input checking on this internal function
+    # also no input checking as used to make combinations of
+    # infection parameters and composable elements
 
-    # return unmodified if all have same length
-    if length(unique(vec_lengths)) == 1
-        return v
-    end
-
-    longest = maximum(vec_lengths)
-    # prefer not to use modification in place with `map!()`
-    v[vec_lengths .!= longest] = map(x -> repeat([x], longest), v[vec_lengths .!= longest])
-    v
+    # recycle vectors and return a tuple
+    vec(collect(Iterators.product(v...)))
 end
+
+a = recycle_vectors(["a", "b"], ["*"])
+
+recycle_vectors([1,2,3], ["a", "b"], ["*"])
 
 export recycle_vectors
