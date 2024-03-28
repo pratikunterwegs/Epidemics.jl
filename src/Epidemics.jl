@@ -7,5 +7,6 @@ include("model_epidemic_default.jl")
 include("model_vacamole.jl")
 include("model_stochastic.jl")
 include("tools.jl")
+include("prepare_data.jl")
 
 end
