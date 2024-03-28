@@ -39,16 +39,17 @@ preinfectious_period = 2
 
 # run the default model with 3 age groups, but no intervention or vaccination
 data = epidemic_default(
-    β=β, σ=σ, γ=γ,
+    β=[β], σ=[σ], γ=[γ],
     population = pop,
     time_end = sim_time_end, increment=1.0
 )
 
 # convert to dataframe
-data_output = DataFrame(data)
+# NOTE that due to vectorisation, the output is a vector of DataFrames
+data_output = DataFrame(data[1])
 
 # WIP - function to handle data with correct naming
-data_output = prepare_data(ode_solution_df = data_output, n_age_groups = 3)
+data_output = prepare_data(data_output, n_age_groups = 3)
 
 # filter data for infectious only
 data_infectious = filter(:compartment => n -> n == "infectious", data_output)
