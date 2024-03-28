@@ -39,26 +39,26 @@ preinfectious_period = 2
 
 # run a model with no intervention or vaccination
 data_baseline = epidemic_default(
-    β=β, σ=σ, γ=γ,
+    β=[β], σ=[σ], γ=[γ],
     population = pop,
     time_end = sim_time_end, increment = 1.0
 )
 
 # run the default model with 3 age groups, intervention, no vaccination
 data = epidemic_default(
-    β=β, σ=σ, γ=γ,
+    β=[β], σ=[σ], γ=[γ],
     population = pop,
     intervention = intervention,
     time_end = sim_time_end, increment = 1.0
 )
 
 # convert to dataframe
-data_baseline = DataFrame(data_baseline)
-data_output = DataFrame(data)
+data_baseline = DataFrame(data_baseline[1])
+data_output = DataFrame(data[1])
 
 # function to handle data with correct naming
-data_baseline = prepare_data(ode_solution_df = data_baseline, n_age_groups = 3)
-data_output = prepare_data(ode_solution_df = data_output, n_age_groups = 3)
+data_baseline = prepare_data(data_baseline, n_age_groups = 3)
+data_output = prepare_data(data_output, n_age_groups = 3)
 
 # assign scenario and combine
 data_baseline[!, :scenario] .= "baseline"
