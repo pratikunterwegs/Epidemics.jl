@@ -2,7 +2,6 @@
 include("helpers.jl")
 include("intervention.jl")
 include("vaccination.jl")
-include("prepare_data.jl")
 
 using OrdinaryDiffEq
 
@@ -16,7 +15,7 @@ groups. This function is intended to be called internally from
 The function expects the `parameters` argument to be a four element vector or
 tuple with the following elements (which do not have to be named):
 
-- a `Population` object with a prepared contact matrix, see [`Population`](@ref);
+- a prepared `contact_matrix`, see [`Population`](@ref);
 - ``\\beta``, the transmission rate;
 - ``\\sigma``, the rate of conversion from exposed to infectious;
 - ``\\gamma``, the rate of recovery;
@@ -29,11 +28,11 @@ group, see [`Npi`](@ref);
 """
 function epidemic_default_ode!(du, u, parameters, t)
     # assumes that each element of the vector is one of the required params
-    population, β, α, γ, intervention, vaccination = parameters
+    contact_matrix, β, α, γ, intervention, vaccination = parameters
 
     # modify contact matrix if the intervention is active
-    contact_matrix = population.contact_matrix .*
-                     (1 .- cumulative_npi(t = t, npi = intervention))
+    cm_temp = contact_matrix .*
+              (1 .- cumulative_npi(t = t, npi = intervention))
 
     # get current ν
     ν_now = current_nu(time = t, vaccination = vaccination)
@@ -42,7 +41,7 @@ function epidemic_default_ode!(du, u, parameters, t)
     # rows represent age groups, epi compartments are columns
     S = @view u[:, 1]
     E = @view u[:, 2]
-    I = contact_matrix * @view u[:, 3] # matrix mult for cm * I
+    I = cm_temp * @view u[:, 3] # matrix mult for cm * I
     I_ = @view u[:, 3] # unmultiplied I for operations involving only I
     R = @view u[:, 4]
     V = @view u[:, 5]
@@ -75,11 +74,15 @@ specific effects, and group-specific vaccination regimes.
 
 ## Arguments
 
-- β: the transmissibility of the disease;
-- σ: the rate of transition from the exposed to the infectious compartment;
-- γ: the recovery rate.
+- β: the transmission rate ``\\beta`` of the disease; may be a numeric `Vector`;
+- σ: the rate of transition from the exposed to the infectious compartment
+    ``\\sigma``; may be a numeric `Vector`;
+- γ: the recovery rate ``\\gamma``; may be a numeric `Vector`.
 
-- `population`: A `Population` with population characteristics;
+- `population`: A `Population` with population characteristics, importantly
+    including a contact matrix describing group-specific social contacts, and
+    a dmeography vector describing the number of individuals in each demographic
+    group;
 - `intervention`: An `Npi` for interventions on social contacts;
 - `vaccination`: A `Vaccination` for the vaccination regime applied;
 - `time_end`: The time in days at which to end the simulation, defaults to 200;
@@ -88,10 +91,10 @@ specific effects, and group-specific vaccination regimes.
     
 """
 function epidemic_default(;
-        β::Number, σ::Number, γ::Number,
+        β::Vector{Number}, σ::Vector{Number}, γ::Vector{Number},
         population::Population,
-        intervention = nothing,
-        vaccination = nothing,
+        intervention::Npi = nothing,
+        vaccination::Vaccination = nothing,
         time_end::Number = 200.0,
         increment::Number = 1.0)
 
@@ -100,13 +103,13 @@ function epidemic_default(;
     @assert increment>0.0 "`increment` must be a positive number"
     @assert time_end>0.0 "`time_end` must be a positive number"
 
-    @assert β > 0.0&&β < Inf "β must be a finite positive number"
-    @assert σ > 0.0&&σ < Inf "σ must be a finite positive number"
-    @assert γ > 0.0&&γ < Inf "γ must be a finite positive number"
+    # @assert β > 0.0&&β < Inf "β must be a finite positive number"
+    # @assert σ > 0.0&&σ < Inf "σ must be a finite positive number"
+    # @assert γ > 0.0&&γ < Inf "γ must be a finite positive number"
 
     # check that population has the right number of compartments
-    compartments = 5
-    @assert size(population.initial_conditions)[2]==compartments "`population` must have 5 compartments"
+    compartments = ["susceptible", "exposed", "infectious", "recovered", "vaccinated"]
+    @assert size(population.initial_conditions)[2]==size(compartments) "`population` must have 5 compartments"
 
     if isnothing(intervention)
         intervention = no_intervention()
@@ -135,22 +138,24 @@ function epidemic_default(;
     population.contact_matrix = prepare_contact_matrix(population = population)
 
     # prepare parameters
-    parameters = tuple(population,
+    # NOTE: population, intervention, and vaccination may only be scalars; WIP
+    parameters = make_combinations([population],
         β, σ, γ,
-        intervention,
-        vaccination)
+        [intervention],
+        [vaccination])
 
     # prepare the timespan
     timespan = (0.0, time_end)
 
     # define the ode problem
-    ode_problem = ODEProblem(epidemic_default_ode!, init, timespan, parameters)
+    ode_problems = [ODEProblem(epidemic_default_ode!, init, timespan, i)
+                    for i in parameters]
 
     # get the solution
-    ode_solution = solve(ode_problem, AutoTsit5(Rosenbrock23()),
-        saveat = increment)
+    ode_solutions = [solve(i, AutoTsit5(Rosenbrock23()), saveat = increment)
+                     for i in ode_problems]
 
-    return ode_solution
+    return ode_solutions
 end
 
 export epidemic_default
