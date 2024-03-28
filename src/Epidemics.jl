@@ -6,5 +6,6 @@ export epidemic_default  # This line exports the function
 include("model_epidemic_default.jl")
 include("model_vacamole.jl")
 include("model_stochastic.jl")
+include("tools.jl")
 
 end
