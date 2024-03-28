@@ -33,8 +33,4 @@ function make_combinations(v...)
     vec(collect(Iterators.product(v...)))
 end
 
-a = recycle_vectors(["a", "b"], ["*"])
-
-recycle_vectors([1,2,3], ["a", "b"], ["*"])
-
 export recycle_vectors
