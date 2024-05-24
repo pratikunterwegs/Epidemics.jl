@@ -60,7 +60,7 @@ The ODE system for the norovirus model. This function is intended to be called
 function epidemic_norovirus_ode!(du, u, parameters, t)
     # du auto-magically takes the type of u (?)
     # each element of the tuple is one of the required params
-    contacts, sigma, rho, delta, epsilon, psi, gamma, b, d, 
+    contacts, sigma, rho, delta, epsilon, psi, gamma, b, d,
     aging, w1, w2, q, phi, upsilon = parameters
 
     # view the values of each compartment per age group
@@ -75,7 +75,8 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
     seasonal_term = seasonal_forcing(t, w1, w2)
 
     # calculate infection potential
-    infection_potential = q .* (seasonal_term * (contacts * sum(Is .+ (Ia * rho), dims=2)))
+    infection_potential = q .*
+                          (seasonal_term * (contacts * sum(Is .+ (Ia * rho), dims = 2)))
 
     # calculate new infections and re-infections
     # NOTE: element-wise multiplication
@@ -109,9 +110,9 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
     # calculate change in compartment size and update the change matrix dU
     # note the use of @. for broadcasting, equivalent to .=
     # change in susceptibles
-    @. dS = -new_I + (delta * R) .+ (aging_vec[1] .+ births) #-
-            # (S_vax_out + S_waning_out) +
-            # (S_vax_out[:, [3, 1, 2]] + S_waning_out[:, [2, 3, 1]])# +
+    @. dS = -new_I + (delta * R) .+ (aging_vec[1] .+ births) -
+            (S_vax_out + S_waning_out) +
+            (S_vax_out[:, [3, 1, 2]] + S_waning_out[:, [2, 3, 1]]) # +
     # R_S_direct_waning
 
     # change in exposed
@@ -127,9 +128,9 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
              (gamma * Ia) .+ (aging_vec[4])
 
     # change in recovered
-    @. dR = -re_I + (gamma * Ia) - (delta * R) .+ (aging_vec[5]) #-
-            # (R_vax_out + R_waning_out) +
-            # (R_vax_out[:, [3, 1, 2]] + R_waning_out[:, [2, 3, 1]]) #-
+    @. dR = -re_I + (gamma * Ia) - (delta * R) .+ (aging_vec[5]) -
+            (R_vax_out + R_waning_out) +
+            (R_vax_out[:, [3, 1, 2]] + R_waning_out[:, [2, 3, 1]]) #-
     # R_S_direct_waning
     # book-keeping new infections and re-infections
     # @. dNew_I = new_I
@@ -143,9 +144,9 @@ demography = [3453670.0, 7385454.0, 39774569.0, 9673058.0]
 # beta = 1.8 / 3.0
 aging = noromod_aging()
 sigma = 0.82 # Matrix(Diagonal([0.82, 0.41, 0.41]))
-phi = 0.0 # [[1e-4, 0, 0,1e-4] [1e-4, 0, 0,1e-4] [0, 0, 0,0]]
-upsilon = 0.0 # 1 ./ ([[0, 0, 0,0] [4.4, 4.4, 4.4,4.4] [4.4, 4.4, 4.4,4.4]] .* 365.0)
-# upsilon[isinf.(upsilon)] .= 0.0
+phi = [[1e-4, 0, 0,1e-4] [1e-4, 0, 0,1e-4] [0, 0, 0,0]]
+upsilon = 1 ./ ([[0, 0, 0,0] [4.4, 4.4, 4.4,4.4] [4.4, 4.4, 4.4,4.4]] .* 365.0)
+upsilon[isinf.(upsilon)] .= 0.0
 rho = 0.05
 w1 = 3.6 / 100.0
 w2 = 0.5 / 100.0 # 5.76 / 100.0
