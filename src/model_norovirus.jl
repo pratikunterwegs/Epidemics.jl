@@ -65,17 +65,17 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
 
     # view the values of each compartment per age group
     # rows represent age groups, epi compartments are columns
-    S = @view u[:, 1]
-    E = @view u[:, 2]
-    Is = @view u[:, 3]
-    Ia = @view u[:, 4]
-    R = @view u[:, 5]
+    S = @view u[:, 1, :]
+    E = @view u[:, 2, :]
+    Is = @view u[:, 3, :]
+    Ia = @view u[:, 4, :]
+    R = @view u[:, 5, :]
 
     # calculate seasonal term
     seasonal_term = seasonal_forcing(t, w1, w2)
 
     # calculate infection potential
-    infection_potential = q .* (seasonal_term * (contacts * (Is .+ (Ia * rho))))
+    infection_potential = q .* (seasonal_term * (contacts * sum(Is .+ (Ia * rho), dims=2)))
 
     # calculate new infections and re-infections
     # NOTE: element-wise multiplication
@@ -83,28 +83,28 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
     re_I = R .* infection_potential
 
     # calculate births
-    births = b * sum(@view u[:, 1:5])
-    births = reshape([births; repeat([0], 3)], 4, 1)
+    births = b * sum(@view u[:, 1:5, :])
+    births = reshape([births; repeat([0], 11)], 4, 3)
 
     # vaccination and waning in and out
     S_vax_out = S .* phi
     S_waning_out = S .* upsilon
     R_vax_out = R .* phi
     R_waning_out = R .* upsilon
-    # R_S_direct_waning = R * delta * gamma
-    # R_S_direct_waning[:, 1] .= 0.0 # remove extra waning term from R -> S
+    R_S_direct_waning = R * delta * gamma
+    R_S_direct_waning[:, 1] .= 0.0 # remove extra waning term from R -> S
 
     # views to the change array slice
-    dS = @view du[:, 1]
-    dE = @view du[:, 2]
-    dIs = @view du[:, 3]
-    dIa = @view du[:, 4]
-    dR = @view du[:, 5]
+    dS = @view du[:, 1, :]
+    dE = @view du[:, 2, :]
+    dIs = @view du[:, 3, :]
+    dIa = @view du[:, 4, :]
+    dR = @view du[:, 5, :]
     # dNew_I = @view du[:, 6]
     # dRe_I = @view du[:, 7]
 
     # aging changes vector
-    aging_vec = [aging * @view u[:, i] for i in 1:5]
+    aging_vec = [aging * @view u[:, i, :] for i in 1:5]
 
     # calculate change in compartment size and update the change matrix dU
     # note the use of @. for broadcasting, equivalent to .=
