@@ -112,8 +112,8 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
     # change in susceptibles
     @. dS = -new_I + (delta * R) .+ (aging_vec[1] .+ births) -
             (S_vax_out + S_waning_out) +
-            (S_vax_out[:, [3, 1, 2]] + S_waning_out[:, [2, 3, 1]]) # +
-    # R_S_direct_waning
+            (S_vax_out[:, [3, 1, 2]] + S_waning_out[:, [2, 3, 1]]) +
+            R_S_direct_waning
 
     # change in exposed
     @. dE = new_I - (epsilon * E) .+ (aging_vec[2])
@@ -130,8 +130,8 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
     # change in recovered
     @. dR = -re_I + (gamma * Ia) - (delta * R) .+ (aging_vec[5]) -
             (R_vax_out + R_waning_out) +
-            (R_vax_out[:, [3, 1, 2]] + R_waning_out[:, [2, 3, 1]]) #-
-    # R_S_direct_waning
+            (R_vax_out[:, [3, 1, 2]] + R_waning_out[:, [2, 3, 1]]) -
+            R_S_direct_waning
     # book-keeping new infections and re-infections
     # @. dNew_I = new_I
     # @. dRe_I = re_I
@@ -177,8 +177,7 @@ ode_problem = ODEProblem(epidemic_norovirus_ode!, initial_state, timespan, param
 
 # get the solution
 ode_solutions = solve(ode_problem,
-    AutoTsit5(Rosenbrock23()),
-    saveat = increment)
+    AutoTsit5(Rosenbrock23()))
 
 # plot(ode_solutions, vars=((t,s1,s2,s3,s4) -> (t,s1+s2+s3+s4), 0,5,6,7,8))
 plot(ode_solutions, vars = (0, 5:8))
