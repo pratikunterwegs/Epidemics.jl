@@ -33,8 +33,8 @@ end
 
 function noromod_initial_state()
     init = [[3857263.0, 8103718.0, 42460865.0, 12374961.0]
-            [100.0, 100.0, 100.0, 100.0]
-            [10.0, 10.0, 10.0, 10.0]
+            [100.0, 0.0, 0.0, 0.0]
+            [10.0, 0.0, 0.0, 0.0]
             [0, 0, 0, 0]
             [0.0, 0, 0, 0]
             # [0, 0, 0, 0]
@@ -47,8 +47,8 @@ function noromod_initial_state()
     init_vax = zeros(age_groups, compartments)
     init_vax2 = copy(init_vax)
 
-    # return cat(init, init_vax, init_vax2, dims = 3)
-    return init
+    return cat(init, init_vax, init_vax2, dims = 3)
+    # return init
 end
 
 """
