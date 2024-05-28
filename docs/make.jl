@@ -18,6 +18,7 @@ makedocs(;
              "Get started" => "epidemics.md",
              "Modelling interventions" => "intervention.md",
              "Stochastic model" => "stochastic_model.md",
+             "Norovirus model" => "norovirus.md",
              "Benchmarking" => "benchmarking.md"
          ])
 
