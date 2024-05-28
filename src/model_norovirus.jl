@@ -1,12 +1,6 @@
 
-include("helpers.jl")
-include("intervention.jl")
-include("vaccination.jl")
-
 using OrdinaryDiffEq
 using LinearAlgebra
-using Plots
-# using LSODA
 
 # copied from socialmixr::polymod UK
 function noromod_contacts()
@@ -14,6 +8,10 @@ function noromod_contacts()
             [0.5994315 7.9460784 6.575480 0.6006796]
             [0.4341422 1.2209536 9.169207 1.0025452]
             [0.1306272 0.4586235 4.122357 1.7142857]]
+end
+
+function noromod_demography()
+    return [3453670.0, 7385454.0, 39774569.0, 9673058.0]
 end
 
 function noromod_aging()
@@ -36,10 +34,7 @@ function noromod_initial_state()
             [100.0, 0.0, 0.0, 0.0]
             [10.0, 0.0, 0.0, 0.0]
             [0, 0, 0, 0]
-            [0.0, 0, 0, 0]
-            # [0, 0, 0, 0]
-            # [0, 0, 0, 0]
-            ]
+            [0.0, 0, 0, 0]]
     compartments = 5
     age_groups = 4
 
@@ -48,7 +43,6 @@ function noromod_initial_state()
     init_vax2 = copy(init_vax)
 
     return cat(init, init_vax, init_vax2, dims = 3)
-    # return init
 end
 
 """
@@ -136,47 +130,62 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
             R_S_direct_waning
 end
 
-#### Testing code ####
-initial_state = noromod_initial_state()
-contacts = noromod_contacts()
-demography = [3453670.0, 7385454.0, 39774569.0, 9673058.0]
-aging = noromod_aging()
-sigma = 0.82 # Matrix(Diagonal([0.82, 0.41, 0.41]))
-phi = [[1e-4, 0, 0,1e-4] [1e-4, 0, 0,1e-4] [0, 0, 0,0]]
-upsilon = 1 ./ ([[0, 0, 0,0] [4.4, 4.4, 4.4,4.4] [4.4, 4.4, 4.4,4.4]] .* 365.0)
-upsilon[isinf.(upsilon)] .= 0.0
-rho = 0.05
-w1 = 3.6 / 100.0
-w2 = 0.5 / 100.0 # 5.76 / 100.0
-delta = 1.0 / (4.4 * 365.0)
-q1 = 0.195
-q2 = 0.039
-b = 11.4e-3 / 365.0
-d = 0.0 # copy(b)
-epsilon = 1.0
-psi = 0.5
-gamma = 0.1
-time_end::Number = 11000.0
-increment::Number = 1.0
+"""
+    epidemic_norovirus(initial_state, contacts, aging, sigma, phi, upsilon,
+        rho, w1, w2, delta, q1, q2, b, d, epsilon, psi, gamma, n_age_groups,
+        time_end, increment
+    )
 
-q = [q1, q2, q2, q2]
+Model the progression of a norovirus epidemic with multiple optional vaccination
+strata.
+"""
+function epidemic_norovirus(;
+        initial_state = noromod_initial_state(),
+        contacts = noromod_contacts(),
+        demography = noromod_demography(),
+        aging = noromod_aging(),
+        sigma = Matrix(Diagonal([0.82, 0.41, 0.41])),
+        phi = [[1e-4, 0, 0,1e-4] [1e-4, 0, 0,1e-4] [0, 0, 0,0]],
+        upsilon = 1 ./ ([[0, 0, 0,0] [4.4, 4.4, 4.4,4.4] [4.4, 4.4, 4.4,4.4]] .* 365.0),
+        rho = 0.05,
+        w1 = 3.6 / 100.0,
+        w2 = 0.5 / 100.0,
+        delta = 1.0 / (4.4 * 365.0),
+        q1 = 0.195,
+        q2 = 0.039,
+        b = 11.4e-3 / 365.0,
+        d = 0.0,
+        epsilon = 1.0,
+        psi = 0.5,
+        gamma = 0.1,
+        time_end::Number = 11100.0,
+        increment::Number = 1.0)
 
-contacts = transpose(transpose(contacts) ./ demography)
+    # prepare age-specific transmission probability
+    q = [q1, q2, q2, q2]
+    # fix division by zero in waning parameter
+    upsilon[isinf.(upsilon)] .= 0.0
 
-# no seasonal offsettiing for this scenario model
-parameters = tuple(contacts, sigma, rho, delta,
-    epsilon, psi, gamma, b, d, aging, w1, w2, q, phi, upsilon)
+    # scale contacts by demography matrix
+    contacts = transpose(transpose(contacts) ./ demography)
 
-# prepare the timespan
-timespan = (0.0, time_end)
+    # no seasonal offsettiing for this scenario model
+    parameters = tuple(contacts, sigma, rho, delta,
+        epsilon, psi, gamma, b, d, aging, w1, w2, q, phi, upsilon)
 
-# define the ode problem
-ode_problem = ODEProblem(epidemic_norovirus_ode!, initial_state, timespan, parameters)
+    # prepare the timespan
+    timespan = (0.0, time_end)
 
-# get the solution
-ode_solutions = solve(ode_problem,
-    AutoTsit5(Rosenbrock23()))
+    # define the ode problem
+    ode_problem = ODEProblem(epidemic_norovirus_ode!, initial_state, timespan, parameters)
 
-# plot(ode_solutions, vars=((t,s1,s2,s3,s4) -> (t,s1+s2+s3+s4), 0,5,6,7,8))
-plot(ode_solutions, vars = (0, 5:8))
+    # get the solution
+    ode_solutions = solve(ode_problem,
+        AutoTsit5(Rosenbrock23()),
+        saveat = increment)
 
+    return ode_solutions
+end
+
+export noromod_aging, noromod_contacts, noromod_demography, noromod_initial_state
+export epidemic_norovirus
