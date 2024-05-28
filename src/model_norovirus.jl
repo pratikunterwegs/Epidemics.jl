@@ -116,13 +116,15 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
     # change in exposed
     @. dE = new_I - (epsilon * E) + (aging_vec[2])
 
+    # calculate exposed to Is and Ia
+    E_sigma = (epsilon * E) * sigma
+    E_inv_sigma = (epsilon * E) - E_sigma
+
     # change in infectious symptomatic
-    E_sigma = E * sigma
-    E_inv_sigma = E * (1.0 .- sigma)
-    @. dIs = -(psi * Is) + (epsilon * E_sigma) + (aging_vec[3])
+    @. dIs = -(psi * Is) + E_sigma + (aging_vec[3])
 
     # change in infectious asymptomatic
-    @. dIa = re_I + (psi * Is) + (epsilon * E_inv_sigma) -
+    @. dIa = re_I + (psi * Is) + E_inv_sigma -
              (gamma * Ia) + (aging_vec[4])
 
     # change in recovered
