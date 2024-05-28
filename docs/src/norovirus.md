@@ -24,3 +24,12 @@ plot(data, vars=(0, 25:28))
 # plot exposed in double-vaccinated group
 plot(data, vars=(0, 45:48))
 ```
+
+## Benchmarking
+
+```@example benchmarking
+using Epidemics
+using BenchmarkTools
+
+@benchmark epidemic_norovirus()
+```
