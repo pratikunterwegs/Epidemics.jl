@@ -109,26 +109,28 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
     # note the use of @. for broadcasting, equivalent to .=
     # change in susceptibles
     @. dS = -new_I + (delta * R) + (aging_vec[1] + births) -
+            (d * S) -
             (S_vax_out + S_waning_out) +
             (S_vax_out[:, [3, 1, 2]] + S_waning_out[:, [2, 3, 1]]) +
             R_S_direct_waning
 
     # change in exposed
-    @. dE = new_I - (epsilon * E) + (aging_vec[2])
+    @. dE = new_I - (epsilon * E) + (aging_vec[2]) - (d * E)
 
     # calculate exposed to Is and Ia
     E_sigma = (epsilon * E) * sigma
     E_inv_sigma = (epsilon * E) - E_sigma
 
     # change in infectious symptomatic
-    @. dIs = -(psi * Is) + E_sigma + (aging_vec[3])
+    @. dIs = -(psi * Is) + E_sigma + (aging_vec[3]) - (d * Is)
 
     # change in infectious asymptomatic
     @. dIa = re_I + (psi * Is) + E_inv_sigma -
-             (gamma * Ia) + (aging_vec[4])
+             (gamma * Ia) + (aging_vec[4]) - (d * Ia)
 
     # change in recovered
     @. dR = -re_I + (gamma * Ia) - (delta * R) + (aging_vec[5]) -
+            (d * R) -
             (R_vax_out + R_waning_out) +
             (R_vax_out[:, [3, 1, 2]] + R_waning_out[:, [2, 3, 1]]) -
             R_S_direct_waning
