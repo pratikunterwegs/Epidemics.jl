@@ -101,8 +101,6 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
     dIs = @view du[:, 3, :]
     dIa = @view du[:, 4, :]
     dR = @view du[:, 5, :]
-    # dNew_I = @view du[:, 6]
-    # dRe_I = @view du[:, 7]
 
     # aging changes vector
     aging_vec = [aging * @view u[:, i, :] for i in 1:5]
@@ -110,38 +108,34 @@ function epidemic_norovirus_ode!(du, u, parameters, t)
     # calculate change in compartment size and update the change matrix dU
     # note the use of @. for broadcasting, equivalent to .=
     # change in susceptibles
-    @. dS = -new_I + (delta * R) .+ (aging_vec[1] .+ births) -
+    @. dS = -new_I + (delta * R) + (aging_vec[1] + births) -
             (S_vax_out + S_waning_out) +
             (S_vax_out[:, [3, 1, 2]] + S_waning_out[:, [2, 3, 1]]) +
             R_S_direct_waning
 
     # change in exposed
-    @. dE = new_I - (epsilon * E) .+ (aging_vec[2])
+    @. dE = new_I - (epsilon * E) + (aging_vec[2])
 
     # change in infectious symptomatic
     E_sigma = E * sigma
     E_inv_sigma = E * (1.0 .- sigma)
-    @. dIs = -(psi * Is) .+ (epsilon * E_sigma) .+ (aging_vec[3])
+    @. dIs = -(psi * Is) + (epsilon * E_sigma) + (aging_vec[3])
 
     # change in infectious asymptomatic
-    @. dIa = re_I .+ (psi * Is) .+ (epsilon * E_inv_sigma) -
-             (gamma * Ia) .+ (aging_vec[4])
+    @. dIa = re_I + (psi * Is) + (epsilon * E_inv_sigma) -
+             (gamma * Ia) + (aging_vec[4])
 
     # change in recovered
-    @. dR = -re_I + (gamma * Ia) - (delta * R) .+ (aging_vec[5]) -
+    @. dR = -re_I + (gamma * Ia) - (delta * R) + (aging_vec[5]) -
             (R_vax_out + R_waning_out) +
             (R_vax_out[:, [3, 1, 2]] + R_waning_out[:, [2, 3, 1]]) -
             R_S_direct_waning
-    # book-keeping new infections and re-infections
-    # @. dNew_I = new_I
-    # @. dRe_I = re_I
 end
 
 #### Testing code ####
 initial_state = noromod_initial_state()
-contacts = noromod_contacts() # mean of all UK contacts
+contacts = noromod_contacts()
 demography = [3453670.0, 7385454.0, 39774569.0, 9673058.0]
-# beta = 1.8 / 3.0
 aging = noromod_aging()
 sigma = 0.82 # Matrix(Diagonal([0.82, 0.41, 0.41]))
 phi = [[1e-4, 0, 0,1e-4] [1e-4, 0, 0,1e-4] [0, 0, 0,0]]
