@@ -181,7 +181,7 @@ function epidemic_norovirus(;
 
     # get the solution
     ode_solutions = solve(ode_problem,
-        AutoTsit5(Rosenbrock23()),
+        Rosenbrock23(),
         saveat = increment)
 
     return ode_solutions
