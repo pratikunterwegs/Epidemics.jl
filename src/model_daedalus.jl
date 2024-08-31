@@ -24,10 +24,10 @@ function daedalus_initial_state()
     age_groups = 4
 
     init = reshape(init, age_groups, compartments)
-    init_vax = zeros(age_groups, compartments)
-    init_vax2 = copy(init_vax)
+    # init_vax = zeros(age_groups, compartments)
+    # init_vax2 = copy(init_vax)
 
-    return cat(init, init_vax, init_vax2, dims = 3)
+    return init # cat(init, init_vax, init_vax2)
 end
 
 """
@@ -37,8 +37,8 @@ A condition function that checks if a root is found.
 """
 function condition(u, t, integrator) # Event when condition(u,t,integrator) == 0
     # pick a reasonable threshold
-    threshold = 1e3
-    Is = @view u[:, 3, :]
+    threshold = 5e2
+    Is = @view u[:, 3]
     total_infected = sum(Is)
 
     total_infected - threshold
@@ -51,6 +51,7 @@ An event function.
 """
 function affect!(integrator)
     # scale contacts by 0.5
+    print("modifying contacts!")
     integrator.u[13] = integrator.u[12] .* 0.5
 end
 
@@ -71,18 +72,14 @@ function epidemic_daedalus_ode!(du, u, parameters, t)
 
     # view the values of each compartment per age group
     # rows represent age groups, epi compartments are columns
-    S = @view u[:, 1, :]
-    E = @view u[:, 2, :]
-    Is = @view u[:, 3, :]
-    Ia = @view u[:, 4, :]
-    R = @view u[:, 5, :]
-
-    # calculate seasonal term
-    seasonal_term = seasonal_forcing(t, w1, w2)
+    S = @view u[:, 1]
+    E = @view u[:, 2]
+    Is = @view u[:, 3]
+    Ia = @view u[:, 4]
+    R = @view u[:, 5]
 
     # calculate infection potential
-    infection_potential = q .*
-                          (seasonal_term * (contacts * sum(Is .+ (Ia * rho), dims = 2)))
+    infection_potential = q .* (contacts * sum(Is .+ (Ia * rho), dims = 2))
 
     # calculate new infections and re-infections
     # NOTE: element-wise multiplication
@@ -90,32 +87,32 @@ function epidemic_daedalus_ode!(du, u, parameters, t)
     re_I = R .* infection_potential
 
     # calculate births
-    births = b * sum(@view u[:, 1:5, :])
-    births = reshape([births; repeat([0], 11)], 4, 3)
+    births = b * sum(@view u[:, 1:5])
+    births = reshape([births; repeat([0], 3)], 4, 1)
 
-    # vaccination and waning in and out
-    S_vax_out = S .* phi
-    S_waning_out = S .* upsilon
-    R_vax_out = R .* phi
-    R_waning_out = R .* upsilon
-    R_S_direct_waning = R * delta * gamma
-    R_S_direct_waning[:, 1] .= 0.0 # remove extra waning term from R -> S
+    # # vaccination and waning in and out
+    # S_vax_out = S .* phi
+    # S_waning_out = S .* upsilon
+    # R_vax_out = R .* phi
+    # R_waning_out = R .* upsilon
+    # R_S_direct_waning = R * delta * gamma
+    # R_S_direct_waning[:, 1] .= 0.0 # remove extra waning term from R -> S
 
     # views to the change array slice
-    dS = @view du[:, 1, :]
-    dE = @view du[:, 2, :]
-    dIs = @view du[:, 3, :]
-    dIa = @view du[:, 4, :]
-    dR = @view du[:, 5, :]
+    dS = @view du[:, 1]
+    dE = @view du[:, 2]
+    dIs = @view du[:, 3]
+    dIa = @view du[:, 4]
+    dR = @view du[:, 5]
 
     # calculate change in compartment size and update the change matrix dU
     # note the use of @. for broadcasting, equivalent to .=
     # change in susceptibles
     @. dS = -new_I + (delta * R) + births -
-            (d * S) -
-            (S_vax_out + S_waning_out) +
-            (S_vax_out[:, [3, 1, 2]] + S_waning_out[:, [2, 3, 1]]) +
-            R_S_direct_waning
+            (d * S)
+            # (S_vax_out + S_waning_out) +
+            # (S_vax_out[:, [3, 1, 2]] + S_waning_out[:, [2, 3, 1]]) +
+            # R_S_direct_waning
 
     # change in exposed
     @. dE = new_I - (epsilon * E) - (d * E)
@@ -133,10 +130,10 @@ function epidemic_daedalus_ode!(du, u, parameters, t)
 
     # change in recovered
     @. dR = -re_I + (gamma * Ia) - (delta * R) -
-            (d * R) -
-            (R_vax_out + R_waning_out) +
-            (R_vax_out[:, [3, 1, 2]] + R_waning_out[:, [2, 3, 1]]) -
-            R_S_direct_waning
+            (d * R)
+            # (R_vax_out + R_waning_out) +
+            # (R_vax_out[:, [3, 1, 2]] + R_waning_out[:, [2, 3, 1]]) -
+            # R_S_direct_waning
 end
 
 """
@@ -152,7 +149,7 @@ function epidemic_daedalus(;
         initial_state = daedalus_initial_state(),
         contacts = daedalus_contacts(),
         demography = daedalus_demography(),
-        sigma = Matrix(Diagonal([0.82, 0.41, 0.41])),
+        sigma = 0.82,
         phi = [[1e-4, 0, 0,1e-4] [1e-4, 0, 0,1e-4] [0, 0, 0,0]],
         upsilon = 1 ./ ([[0, 0, 0,0] [4.4, 4.4, 4.4,4.4] [4.4, 4.4, 4.4,4.4]] .* 365.0),
         rho = 0.05,
@@ -166,7 +163,7 @@ function epidemic_daedalus(;
         epsilon = 1.0,
         psi = 0.5,
         gamma = 0.1,
-        time_end::Number = 11100.0,
+        time_end::Number = 300.0,
         increment::Number = 1.0)
 
     # prepare age-specific transmission probability
