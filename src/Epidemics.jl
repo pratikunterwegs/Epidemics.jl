@@ -7,6 +7,7 @@ include("model_epidemic_default.jl")
 include("model_vacamole.jl")
 include("model_stochastic.jl")
 include("model_norovirus.jl")
+include("model_daedalus.jl")
 include("tools.jl")
 include("prepare_data.jl")
 
