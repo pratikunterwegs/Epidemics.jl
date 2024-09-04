@@ -19,6 +19,7 @@ makedocs(;
              "Modelling interventions" => "intervention.md",
              "Stochastic model" => "stochastic_model.md",
              "Norovirus model" => "norovirus.md",
+             "Daedalus model" => "daedalus.md",
              "Benchmarking" => "benchmarking.md"
          ])
 
