@@ -10,12 +10,29 @@ function daedalus_contacts()
             [0.1306272 0.4586235 4.122357 1.7142857]]
 end
 
+function australia_demography()
+    return [1669707, 4769747, 14926119, 4134308]
+end
+
+function australia_contacts()
+    return [[3.7187500 2.5982168 5.739112 0.2728101]
+            [0.9095369 13.0623374 5.741992 0.5229291]
+            [0.6420045 1.8348941 11.256655 1.0003495]
+            [0.1347582 0.6540519 3.760931 2.5421895]]
+end
+
 function daedalus_demography()
     return [3453670.0, 7385454.0, 39774569.0, 9673058.0]
 end
 
-function daedalus_initial_state()
-    init = [[3857263.0, 8103718.0, 42460865.0, 12374961.0]
+"""
+    australia_initial_state()
+
+Initial state copied from the noromod code, with five compartments: S, E, Is,
+Ia, R.
+"""
+function australia_initial_state()
+    init = [[1669707, 4769747, 14926119, 4134308]
             [100.0, 0.0, 0.0, 0.0]
             [10.0, 0.0, 0.0, 0.0]
             [0, 0, 0, 0]
@@ -24,7 +41,7 @@ function daedalus_initial_state()
     age_groups = 4
 
     init = reshape(init, age_groups, compartments)
-    
+
     return init
 end
 
@@ -127,9 +144,9 @@ Model the progression of a daedalus epidemic with multiple optional vaccination
 strata.
 """
 function epidemic_daedalus(;
-        initial_state = daedalus_initial_state(),
-        contacts = daedalus_contacts(),
-        demography = daedalus_demography(),
+        initial_state = australia_initial_state(),
+        contacts = australia_contacts(),
+        demography = australia_demography(),
         sigma = 0.82,
         rho = 0.05,
         delta = 1.0 / (4.4 * 365.0),
@@ -145,8 +162,6 @@ function epidemic_daedalus(;
 
     # prepare age-specific transmission probability
     q = [q1, q2, q2, q2]
-    # fix division by zero in waning parameter
-    upsilon[isinf.(upsilon)] .= 0.0
 
     # scale contacts by demography matrix
     contacts = transpose(transpose(contacts) ./ demography)
@@ -161,15 +176,16 @@ function epidemic_daedalus(;
     # define the ode problem
     ode_problem = ODEProblem(epidemic_daedalus_ode!, initial_state, timespan, parameters)
 
-    cb = ContinuousCallback(condition, affect!)
+    # cb = ContinuousCallback(condition, affect!)
 
     # get the solution
-    ode_solutions = solve(ode_problem,
+    ode_solution = solve(ode_problem,
         Rosenbrock23(),
-        saveat = increment, callback = cb)
+        saveat = increment)#,
+        # callback = cb)
 
-    return ode_solutions
+    return ode_solution
 end
 
-export daedalus_contacts, daedalus_demography, daedalus_initial_state
+export australia_contacts, australia_demography, australia_initial_state
 export epidemic_daedalus
