@@ -2,14 +2,7 @@
 using OrdinaryDiffEq
 using LinearAlgebra
 
-# copied from socialmixr::polymod UK
-function daedalus_contacts()
-    return [[1.9157895 1.2818462 4.999847 0.3658614]
-            [0.5994315 7.9460784 6.575480 0.6006796]
-            [0.4341422 1.2209536 9.169207 1.0025452]
-            [0.1306272 0.4586235 4.122357 1.7142857]]
-end
-
+# copied from jameel-institute/daedalus
 function australia_demography()
     return [1669707, 4769747, 14926119, 4134308]
 end
@@ -21,28 +14,28 @@ function australia_contacts()
             [0.1347582 0.6540519 3.760931 2.5421895]]
 end
 
-function daedalus_demography()
-    return [3453670.0, 7385454.0, 39774569.0, 9673058.0]
-end
-
 """
     australia_initial_state()
 
 Initial state copied from the noromod code, with five compartments: S, E, Is,
 Ia, R.
 """
-function australia_initial_state()
-    init = [[1669707, 4769747, 14926119, 4134308]
-            [100.0, 0.0, 0.0, 0.0]
-            [10.0, 0.0, 0.0, 0.0]
+function australia_initial_state(demography)
+    p_infected = 1e-6
+    p_susc = 1 - p_infected
+    init = [repeat([p_susc], 4)
+            repeat([p_infected], 4)
+            [0.0, 0.0, 0.0, 0.0]
+            [0.0, 0.0, 0.0, 0.0]
+            [0.0, 0.0, 0.0, 0.0]
             [0, 0, 0, 0]
-            [0.0, 0, 0, 0]]
-    compartments = 5
+            [0, 0, 0, 0]]
+    compartments = 7
     age_groups = 4
 
     init = reshape(init, age_groups, compartments)
 
-    return init
+    return init .* demography
 end
 
 """
@@ -52,11 +45,11 @@ A condition function that checks if a root is found.
 """
 function condition(u, t, integrator) # Event when condition(u,t,integrator) == 0
     # pick a reasonable threshold
-    threshold = 5e4
-    Is = @view u[:, 3]
-    total_infected = sum(Is)
+    threshold = 1e3
+    H = @view u[:, 5]
+    total_hosp = sum(H)
 
-    total_infected - threshold
+    total_hosp - threshold
 end
 
 """
@@ -65,22 +58,22 @@ end
 An event function.
 """
 function affect!(integrator)
-    # scale contacts by 0.5
-    print("modifying contacts!")
-    integrator.u[1] = integrator.u[1] .* 0.1
+    # scale beta by 0.5
+    # ISSUE: cannot change parameter values as passed in tuple
+    setindex!(integrator.p, integrator.p[2] * 0.5, 2) 
 end
 
 """
-    epidemic_daedalus_ode!(du, u, parameters, t)
+    epidemic_daedalus_ode!(du, u, p, t)
 
 The ODE system for the DAEDALUS model. This function is intended to be called
     internally from [`epidemic_daedalus`](@ref).    
 """
-function epidemic_daedalus_ode!(du, u, parameters, t)
+function epidemic_daedalus_ode!(du, u, p, t)
     # du auto-magically takes the type of u (?)
     # each element of the tuple is one of the required params
-    contacts, sigma, rho, delta, epsilon, psi, gamma, b, d,
-    q = parameters
+    contacts, beta, sigma, p_sigma, epsilon,
+    rho, eta, omega, gamma_Ia, gamma_Is, gamma_H = p
 
     # view the values of each compartment per age group
     # rows represent age groups, epi compartments are columns
@@ -88,87 +81,85 @@ function epidemic_daedalus_ode!(du, u, parameters, t)
     E = @view u[:, 2]
     Is = @view u[:, 3]
     Ia = @view u[:, 4]
-    R = @view u[:, 5]
-
-    # calculate infection potential
-    infection_potential = q .* (contacts * sum(Is .+ (Ia * rho), dims = 2))
+    H = @view u[:, 5]
+    R = @view u[:, 6]
+    D = @view u[:, 7]
 
     # calculate new infections and re-infections
+    foi = beta * contacts * sum(Is .+ (Ia * epsilon), dims = 2)
     # NOTE: element-wise multiplication
-    new_I = S .* infection_potential
-    re_I = R .* infection_potential
-
-    # calculate births
-    births = b * sum(@view u[:, 1:5])
-    births = reshape([births; repeat([0], 3)], 4, 1)
+    new_I = S .* foi
 
     # views to the change array slice
     dS = @view du[:, 1]
     dE = @view du[:, 2]
     dIs = @view du[:, 3]
     dIa = @view du[:, 4]
-    dR = @view du[:, 5]
+    dH = @view du[:, 5]
+    dR = @view du[:, 6]
+    dD = @view du[:, 7]
 
     # calculate change in compartment size and update the change matrix dU
     # note the use of @. for broadcasting, equivalent to .=
     # change in susceptibles
-    @. dS = -new_I + (delta * R) + births -
-            (d * S)
+    @. dS = -new_I + (rho * R)
 
     # change in exposed
-    @. dE = new_I - (epsilon * E) - (d * E)
+    @. dE = new_I - (sigma * E)
 
     # calculate exposed to Is and Ia
-    E_sigma = (epsilon * E) * sigma
-    E_inv_sigma = (epsilon * E) - E_sigma
+    E_sigma = (sigma * E) * p_sigma
+    E_inv_sigma = (sigma * E) * (1 - p_sigma)
 
     # change in infectious symptomatic
-    @. dIs = -(psi * Is) + E_sigma - (d * Is)
+    @. dIs = E_sigma - ((gamma_Is + eta) .* Is)
 
     # change in infectious asymptomatic
-    @. dIa = re_I + (psi * Is) + E_inv_sigma -
-             (gamma * Ia) - (d * Ia)
+    @. dIa = E_inv_sigma - (gamma_Ia * Ia)
+
+    # change in hospitalised
+    @. dH = (eta .* Is) - ((gamma_H + omega) .* H)
 
     # change in recovered
-    @. dR = -re_I + (gamma * Ia) - (delta * R) -
-            (d * R)
+    @. dR = (gamma_Ia * Ia) + (gamma_Is * Is) +
+            (gamma_H .* H) - (rho * R)
+
+    # change in dead
+    @. dD = omega .* H
 end
 
 """
-    epidemic_daedalus(initial_state, contacts, sigma, phi, upsilon,
-        rho, w1, w2, delta, q1, q2, b, d, epsilon, psi, gamma, n_age_groups,
-        time_end, increment
-    )
+    epidemic_daedalus()
 
 Model the progression of a daedalus epidemic with multiple optional vaccination
 strata.
 """
 function epidemic_daedalus(;
-        initial_state = australia_initial_state(),
+        initial_state = australia_initial_state(australia_demography()),
         contacts = australia_contacts(),
         demography = australia_demography(),
-        sigma = 0.82,
-        rho = 0.05,
-        delta = 1.0 / (4.4 * 365.0),
-        q1 = 0.195,
-        q2 = 0.039,
-        b = 11.4e-3 / 365.0,
-        d = 0.0,
-        epsilon = 1.0,
-        psi = 0.5,
-        gamma = 0.1,
+        r0 = 1.3,
+        sigma = 0.217,
+        p_sigma = 0.867,
+        epsilon = 0.58,
+        rho = 0.003,
+        eta = [0.018, 0.082, 0.018, 0.246],
+        omega = [0.012, 0.012, 0.012, 0.012],
+        gamma_Ia = 0.476,
+        gamma_Is = 0.25,
+        gamma_H = [0.034, 0.034, 0.034, 0.034],
         time_end::Number = 300.0,
         increment::Number = 1.0)
 
-    # prepare age-specific transmission probability
-    q = [q1, q2, q2, q2]
+    # prepare transmission parameter beta as r0 / max(eigenvalue(contacts))
+    beta = r0 / maximum(eigvals(contacts))
 
-    # scale contacts by demography matrix
-    contacts = transpose(transpose(contacts) ./ demography)
+    # scale contacts by demography; divide col-wise
+    contacts = contacts * diagm(1 ./ demography)
 
     # no seasonal offsettiing for this scenario model
-    parameters = tuple(contacts, sigma, rho, delta,
-        epsilon, psi, gamma, b, d, q)
+    parameters = tuple(contacts, beta, sigma, p_sigma, epsilon,
+        rho, eta, omega, gamma_Ia, gamma_Is, gamma_H)
 
     # prepare the timespan
     timespan = (0.0, time_end)
@@ -181,7 +172,7 @@ function epidemic_daedalus(;
     # get the solution
     ode_solution = solve(ode_problem,
         Rosenbrock23(),
-        saveat = increment)#,
+        saveat = increment)
         # callback = cb)
 
     return ode_solution
