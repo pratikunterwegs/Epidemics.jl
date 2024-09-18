@@ -170,3 +170,12 @@ end
     @test size(data, 1) ==
           n_replicates * ((time_end + 1.0) / time_increment) * n_compartments
 end
+
+@testset "DAEDALUS model" begin
+    try
+        epidemic_daedalus()
+        @test true
+    catch e
+        @test false
+    end
+end
