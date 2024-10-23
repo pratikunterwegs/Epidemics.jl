@@ -14,28 +14,57 @@ function australia_contacts()
             [0.1347582 0.6540519 3.760931 2.5421895]]
 end
 
+function aus_workers()
+    return [
+        331714, 10730, 110740, 113170, 65189, 224517, 35631, 47879, 45956,
+        8604, 31481, 18322, 30266, 30367, 52435, 69643, 38263, 21966,
+        59115, 33101, 32696, 195972, 79259, 73591, 1199314, 1783483, 319770,
+        66707, 62051, 151331, 89280, 899587, 91912, 90495, 270878, 418059,
+        166920, 823060, 567062, 859198, 1059016, 1686004, 277154, 268246, 0
+    ] .+ 1
+end
+
+function worker_contacts(workers = aus_workers())
+    return 2 .+ workers / sum(workers)
+end
+
 """
     australia_initial_state()
 
-Initial state copied from the noromod code, with five compartments: S, E, Is,
-Ia, R.
+Initial state with seven compartments: S, E, Is, Ia, R, D, and H, and four
+age groups and 49 economic sectors (comprised of working age individuals), and
+two vaccination strata for unvaccinated and vaccinated individuals.
 """
-function australia_initial_state(demography)
+function australia_initial_state(
+        demography = australia_demography(), workers = aus_workers())
     p_infected = 1e-6
     p_susc = 1 - p_infected
-    init = [repeat([p_susc], 4)
-            repeat([p_infected], 4)
-            [0.0, 0.0, 0.0, 0.0]
-            [0.0, 0.0, 0.0, 0.0]
-            [0.0, 0.0, 0.0, 0.0]
-            [0, 0, 0, 0]
-            [0, 0, 0, 0]]
     compartments = 7
     age_groups = 4
+    econ_groups = 45
+    vaccine_strata = 2
 
-    init = reshape(init, age_groups, compartments)
+    init = [p_susc, 0.0, p_infected, 0.0, 0.0, 0.0, 0.0]
+    init = reshape(init, 1, compartments)
+    init = repeat(init, age_groups + econ_groups)
 
-    return init .* demography
+    dummy = zeros(age_groups + econ_groups, compartments, vaccine_strata)
+
+    # assign to first layer
+    dummy[:, :, 1] = init
+
+    # process demography to calculate non-working working age, and concat
+    # demography and worker counts
+    i_working_age = 3
+    inactive_workers = demography[i_working_age] - sum(workers)
+    demography[i_working_age] = inactive_workers
+
+    demography = [demography; workers]
+
+    # multiply by demography - row i times element i
+    init = dummy .* demography
+
+    return init
 end
 
 """
@@ -60,7 +89,7 @@ An event function.
 function affect!(integrator)
     # scale beta by 0.5
     # ISSUE: cannot change parameter values as passed in tuple
-    setindex!(integrator.p, integrator.p[2] * 0.5, 2) 
+    setindex!(integrator.p, integrator.p[2] * 0.5, 2)
 end
 
 """
@@ -70,49 +99,79 @@ The ODE system for the DAEDALUS model. This function is intended to be called
     internally from [`epidemic_daedalus`](@ref).    
 """
 function epidemic_daedalus_ode!(du, u, p, t)
+    i_age_groups = 1:4
+    i_working_age = 3
+    i_econ_groups = 5:49
+
     # du auto-magically takes the type of u (?)
     # each element of the tuple is one of the required params
-    contacts, beta, sigma, p_sigma, epsilon,
-    rho, eta, omega, gamma_Ia, gamma_Is, gamma_H = p
+    contacts, cw, beta, sigma, p_sigma, epsilon,
+    rho, eta, omega, gamma_Ia, gamma_Is, gamma_H, nu, psi,
+    t_vax = p
+
+    # time dependent vaccination
+    nu = t > t_vax ? nu : 0.0
 
     # view the values of each compartment per age group
     # rows represent age groups, epi compartments are columns
-    S = @view u[:, 1]
-    E = @view u[:, 2]
-    Is = @view u[:, 3]
-    Ia = @view u[:, 4]
-    H = @view u[:, 5]
-    R = @view u[:, 6]
-    D = @view u[:, 7]
+    S = @view u[:, 1, :]
+    E = @view u[:, 2, :]
+    Is = @view u[:, 3, :]
+    Ia = @view u[:, 4, :]
+    H = @view u[:, 5, :]
+    R = @view u[:, 6, :]
+    D = @view u[:, 7, :]
 
     # calculate new infections and re-infections
-    foi = beta * contacts * sum(Is .+ (Ia * epsilon), dims = 2)
+    community_infectious = sum(
+        Is[i_age_groups, :] .+ (Ia[i_age_groups, :] * epsilon), dims = 2)
+    community_infectious[i_working_age] += sum(Is[i_econ_groups, :] .+
+                                               (Ia[i_econ_groups, :] * epsilon))
+
+    foi = zeros(49)
+    foi[i_age_groups] = beta * contacts * community_infectious
+    foi[i_econ_groups] .= foi[i_working_age]
+
     # NOTE: element-wise multiplication
     new_I = S .* foi
 
+    # workplace
+    # new_I_work = S[i_econ_groups, :] .* cw .*
+    #              (Is[i_econ_groups, :] .+ (Ia[i_econ_groups, :] * epsilon))
+
     # views to the change array slice
-    dS = @view du[:, 1]
-    dE = @view du[:, 2]
-    dIs = @view du[:, 3]
-    dIa = @view du[:, 4]
-    dH = @view du[:, 5]
-    dR = @view du[:, 6]
-    dD = @view du[:, 7]
+    dS = @view du[:, 1, :]
+    dE = @view du[:, 2, :]
+    dIs = @view du[:, 3, :]
+    dIa = @view du[:, 4, :]
+    dH = @view du[:, 5, :]
+    dR = @view du[:, 6, :]
+    dD = @view du[:, 7, :]
+
+    # new vaccinations from susceptibles
+    new_Svax = @view S[:, 1]
+    new_Swane = @view S[:, 2]
+
+    # new vaccinations from recovered
+    new_Rvax = @view R[:, 1]
+    new_Rwane = @view R[:, 2]
 
     # calculate change in compartment size and update the change matrix dU
     # note the use of @. for broadcasting, equivalent to .=
     # change in susceptibles
-    @. dS = -new_I + (rho * R)
+    @. dS = -new_I + (rho * R) # - new_I_work
+    @. dS[:, 1] += (-new_Svax * nu + new_Swane * psi)
+    @. dS[:, 2] += (new_Svax * nu - new_Swane * psi)
 
     # change in exposed
-    @. dE = new_I - (sigma * E)
+    @. dE = new_I - (sigma * E) # + new_I_work 
 
     # calculate exposed to Is and Ia
     E_sigma = (sigma * E) * p_sigma
     E_inv_sigma = (sigma * E) * (1 - p_sigma)
 
     # change in infectious symptomatic
-    @. dIs = E_sigma - ((gamma_Is + eta) .* Is)
+    @. dIs = E_sigma - ((gamma_Is .+ eta) .* Is)
 
     # change in infectious asymptomatic
     @. dIa = E_inv_sigma - (gamma_Ia * Ia)
@@ -123,6 +182,9 @@ function epidemic_daedalus_ode!(du, u, p, t)
     # change in recovered
     @. dR = (gamma_Ia * Ia) + (gamma_Is * Is) +
             (gamma_H .* H) - (rho * R)
+
+    @. dR[:, 1] += (-new_Rvax * nu + new_Rwane * psi)
+    @. dR[:, 2] += (new_Rvax * nu - new_Rwane * psi)
 
     # change in dead
     @. dD = omega .* H
@@ -137,6 +199,7 @@ strata.
 function epidemic_daedalus(;
         initial_state = australia_initial_state(australia_demography()),
         contacts = australia_contacts(),
+        contacts_workers = worker_contacts(),
         demography = australia_demography(),
         r0 = 1.3,
         sigma = 0.217,
@@ -148,6 +211,9 @@ function epidemic_daedalus(;
         gamma_Ia = 0.476,
         gamma_Is = 0.25,
         gamma_H = [0.034, 0.034, 0.034, 0.034],
+        nu = (2 / 100) / 7,
+        psi = 1 / 270,
+        t_vax = 200,
         time_end::Number = 300.0,
         increment::Number = 1.0)
 
@@ -156,24 +222,35 @@ function epidemic_daedalus(;
 
     # scale contacts by demography; divide col-wise
     contacts = contacts * diagm(1 ./ demography)
+    cw = contacts_workers / workers
 
-    # no seasonal offsettiing for this scenario model
-    parameters = tuple(contacts, beta, sigma, p_sigma, epsilon,
-        rho, eta, omega, gamma_Ia, gamma_Is, gamma_H)
+    # prepare parameters to account for economic sector groups
+    i_working_age = 3
+    econ_sectors = 45
+
+    eta = [eta; repeat([eta[i_working_age]], econ_sectors)]
+    omega = [omega; repeat([omega[i_working_age]], econ_sectors)]
+    gamma_H = [gamma_H; repeat([gamma_H[i_working_age]], econ_sectors)]
+
+    # combined parameters into a tuple: these cannot be modified during solving
+    parameters = tuple(contacts, cw, beta, sigma, p_sigma, epsilon,
+        rho, eta, omega, gamma_Ia, gamma_Is, gamma_H, nu, psi, t_vax)
 
     # prepare the timespan
     timespan = (0.0, time_end)
 
     # define the ode problem
-    ode_problem = ODEProblem(epidemic_daedalus_ode!, initial_state, timespan, parameters)
+    ode_problem = ODEProblem(
+        epidemic_daedalus_ode!, initial_state, timespan, parameters
+    )
 
     # cb = ContinuousCallback(condition, affect!)
 
     # get the solution
+    # NOTE: not compatible with autodiff!
     ode_solution = solve(ode_problem,
-        Rosenbrock23(),
-        saveat = increment)
-        # callback = cb)
+        Rosenbrock23(autodiff = false))
+    # callback = cb)
 
     return ode_solution
 end
