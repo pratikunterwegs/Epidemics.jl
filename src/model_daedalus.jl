@@ -235,7 +235,7 @@ function epidemic_daedalus(;
         increment::Number = 1.0)
 
     # prepare transmission parameter beta as r0 / max(eigenvalue(contacts))
-    beta = r0 / maximum(eigvals(contacts))
+    beta = r0 * sigma * ((p_sigma * gamma_Is) + (1 - p_sigma) * gamma_Ia)
 
     # scale contacts by demography; divide col-wise
     contacts = contacts * diagm(1 ./ demography)
