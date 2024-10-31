@@ -144,14 +144,8 @@ function epidemic_daedalus_ode!(du, u, p, t)
     D = @view u[:, 7, :]
 
     # calculate new infections and re-infections
-    community_infectious = sum(
-        Is[i_age_groups, :] .+ (Ia[i_age_groups, :] * epsilon), dims = 2)
-    community_infectious[i_working_age] += sum(Is[i_econ_groups, :] .+
-                                               (Ia[i_econ_groups, :] * epsilon))
-
-    foi = zeros(49)
-    foi[i_age_groups] = beta * contacts * community_infectious
-    foi[i_econ_groups] .= foi[i_working_age]
+    community_infectious = sum(Is .+ Ia * epsilon, dims = 2)
+    foi = beta * contacts * community_infectious
 
     # NOTE: element-wise multiplication
     new_I = S .* foi
