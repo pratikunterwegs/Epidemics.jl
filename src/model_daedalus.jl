@@ -8,10 +8,12 @@ function australia_demography()
 end
 
 function australia_contacts()
-    return [[3.7187500 2.5982168 5.739112 0.2728101]
-            [0.9095369 13.0623374 5.741992 0.5229291]
-            [0.6420045 1.8348941 11.256655 1.0003495]
-            [0.1347582 0.6540519 3.760931 2.5421895]]
+    cm = [[3.7187500 2.5982168 5.739112 0.2728101]
+          [0.9095369 13.0623374 5.741992 0.5229291]
+          [0.6420045 1.8348941 11.256655 1.0003495]
+          [0.1347582 0.6540519 3.760931 2.5421895]]
+
+    return cm
 end
 
 function aus_workers()
@@ -27,6 +29,24 @@ end
 function worker_contacts(workers = aus_workers())
     # in proportion to workforce and scaled by workforce
     return (2 .+ workers / sum(workers)) ./ workers
+end
+
+# Function to prepare 49x49 community contacts matrix
+function prepare_contacts(cm = australia_contacts())
+    cm_x = ones(49, 49) .* cm[3, 3]
+    cm_x[1:4, 1:4] = cm
+    cm_x[1:4, 5:49] .= cm[:, 3]
+    cm_x[5:49, 1:4] .= reshape(cm[3, :], 1, 4)
+
+    return cm_x
+end
+
+# Function to prepare 49 element demography vector for I/N in FOI calculation
+function prepare_demog(demog = australia_demography(), workers = aus_workers())
+    demog_x = ones(49) * demog[3]
+    demog_x[1:4] = demog
+
+    return demog_x
 end
 
 """
