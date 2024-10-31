@@ -25,7 +25,8 @@ function aus_workers()
 end
 
 function worker_contacts(workers = aus_workers())
-    return 2 .+ workers / sum(workers)
+    # in proportion to workforce and scaled by workforce
+    return (2 .+ workers / sum(workers)) ./ workers
 end
 
 """
@@ -136,8 +137,10 @@ function epidemic_daedalus_ode!(du, u, p, t)
     new_I = S .* foi
 
     # workplace
-    # new_I_work = S[i_econ_groups, :] .* cw .*
-    #              (Is[i_econ_groups, :] .+ (Ia[i_econ_groups, :] * epsilon))
+    new_I_work = S[i_econ_groups, :] .* cw .*
+                 (Is[i_econ_groups, :] .+ (Ia[i_econ_groups, :] * epsilon))
+
+    new_I[i_econ_groups, :] += new_I_work
 
     # views to the change array slice
     dS = @view du[:, 1, :]
@@ -159,12 +162,12 @@ function epidemic_daedalus_ode!(du, u, p, t)
     # calculate change in compartment size and update the change matrix dU
     # note the use of @. for broadcasting, equivalent to .=
     # change in susceptibles
-    @. dS = -new_I + (rho * R) # - new_I_work
+    @. dS = -new_I + (rho * R)
     @. dS[:, 1] += (-new_Svax * nu + new_Swane * psi)
     @. dS[:, 2] += (new_Svax * nu - new_Swane * psi)
 
     # change in exposed
-    @. dE = new_I - (sigma * E) # + new_I_work 
+    @. dE = new_I - (sigma * E)
 
     # calculate exposed to Is and Ia
     E_sigma = (sigma * E) * p_sigma
@@ -199,7 +202,7 @@ strata.
 function epidemic_daedalus(;
         initial_state = australia_initial_state(australia_demography()),
         contacts = australia_contacts(),
-        contacts_workers = worker_contacts(),
+        cw = worker_contacts(),
         demography = australia_demography(),
         r0 = 1.3,
         sigma = 0.217,
@@ -222,7 +225,6 @@ function epidemic_daedalus(;
 
     # scale contacts by demography; divide col-wise
     contacts = contacts * diagm(1 ./ demography)
-    cw = contacts_workers / workers
 
     # prepare parameters to account for economic sector groups
     i_working_age = 3
