@@ -238,7 +238,7 @@ function epidemic_daedalus(;
     beta = r0 * sigma * ((p_sigma * gamma_Is) + (1 - p_sigma) * gamma_Ia)
 
     # scale contacts by demography; divide col-wise
-    contacts = contacts * diagm(1 ./ demography)
+    contacts = contacts ./ demography
 
     # prepare parameters to account for economic sector groups
     i_working_age = 3
