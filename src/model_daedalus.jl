@@ -215,9 +215,9 @@ strata.
 """
 function epidemic_daedalus(;
         initial_state = australia_initial_state(australia_demography()),
-        contacts = australia_contacts(),
+        contacts = prepare_contacts(),
         cw = worker_contacts(),
-        demography = australia_demography(),
+        demography = prepare_demog(),
         r0 = 1.3,
         sigma = 0.217,
         p_sigma = 0.867,
