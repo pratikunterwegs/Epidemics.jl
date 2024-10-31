@@ -13,7 +13,9 @@ data = epidemic_daedalus(time_end=600.0)
 
 # plot exposed group
 plot(data, vars=(0, 50:99))
+```
 
+```@example basic_daedalus
 # plot exposed among vaccinated - should start at vax_time = 200.0
 plot(data, vars=(0, 394:442))
 ```
