@@ -264,8 +264,7 @@ function epidemic_daedalus(;
 
     # get the solution
     # NOTE: not compatible with autodiff!
-    ode_solution = solve(ode_problem,
-        Rosenbrock23(autodiff = false))
+    ode_solution = solve(ode_problem)
     # callback = cb)
 
     return ode_solution
