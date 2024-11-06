@@ -92,15 +92,11 @@ end
 """
     condition(u, t, integrator)
 
-A condition function that checks if a root is found.
+A condition function that triggers an event at a specific time.
 """
 function condition(u, t, integrator) # Event when condition(u,t,integrator) == 0
-    # pick a reasonable threshold
-    threshold = 1e3
-    H = @view u[:, 5]
-    total_hosp = sum(H)
-
-    total_hosp - threshold
+    # trigger vaccination at t_vax, access by position
+    t == integrator.p[15]
 end
 
 """
@@ -109,16 +105,14 @@ end
 An event function.
 """
 function affect!(integrator)
-    # scale beta by 0.5
-    # ISSUE: cannot change parameter values as passed in tuple
-    setindex!(integrator.p, integrator.p[2] * 0.5, 2)
+    integrator.p[16] = true # initial value is 0.0
 end
 
 """
     epidemic_daedalus_ode!(du, u, p, t)
 
 The ODE system for the DAEDALUS model. This function is intended to be called
-    internally from [`epidemic_daedalus`](@ref).    
+    internally from [`epidemic_daedalus`](@ref).
 """
 function epidemic_daedalus_ode!(du, u, p, t)
     i_age_groups = 1:4
@@ -129,10 +123,7 @@ function epidemic_daedalus_ode!(du, u, p, t)
     # each element of the tuple is one of the required params
     contacts, cw, beta, sigma, p_sigma, epsilon,
     rho, eta, omega, gamma_Ia, gamma_Is, gamma_H, nu, psi,
-    t_vax = p
-
-    # time dependent vaccination
-    nu = t > t_vax ? nu : 0.0
+    t_vax, switch = p
 
     # view the values of each compartment per age group
     # rows represent age groups, epi compartments are columns
@@ -178,8 +169,8 @@ function epidemic_daedalus_ode!(du, u, p, t)
     # note the use of @. for broadcasting, equivalent to .=
     # change in susceptibles
     @. dS = -new_I + (rho * R)
-    @. dS[:, 1] += (-new_Svax * nu + new_Swane * psi)
-    @. dS[:, 2] += (new_Svax * nu - new_Swane * psi)
+    @. dS[:, 1] += (-new_Svax * (nu * switch) + new_Swane * psi)
+    @. dS[:, 2] += (new_Svax * (nu * switch) - new_Swane * psi)
 
     # change in exposed
     @. dE = new_I - (sigma * E)
@@ -201,8 +192,8 @@ function epidemic_daedalus_ode!(du, u, p, t)
     @. dR = (gamma_Ia * Ia) + (gamma_Is * Is) +
             (gamma_H .* H) - (rho * R)
 
-    @. dR[:, 1] += (-new_Rvax * nu + new_Rwane * psi)
-    @. dR[:, 2] += (new_Rvax * nu - new_Rwane * psi)
+    @. dR[:, 1] += (-new_Rvax * (nu * switch) + new_Rwane * psi)
+    @. dR[:, 2] += (new_Rvax * (nu * switch) - new_Rwane * psi)
 
     # change in dead
     @. dD = omega .* H
@@ -230,13 +221,13 @@ function epidemic_daedalus(;
         gamma_Is = 0.25,
         gamma_H = [0.034, 0.034, 0.034, 0.034],
         nu = (2 / 100) / 7,
-        psi = 1 / 270,
-        t_vax = 200,
+        psi::Number = 1 / 270,
+        t_vax::Number = 200.0,
         time_end::Number = 300.0,
         increment::Number = 1.0)
 
     # prepare transmission parameter beta as r0 / max(eigenvalue(contacts))
-    beta = r0 * sigma * ((p_sigma * gamma_Is) + (1 - p_sigma) * gamma_Ia)
+    beta = 0.03
 
     # scale contacts by demography; divide col-wise
     contacts = contacts ./ demography
@@ -250,8 +241,10 @@ function epidemic_daedalus(;
     gamma_H = [gamma_H; repeat([gamma_H[i_working_age]], econ_sectors)]
 
     # combined parameters into a tuple: these cannot be modified during solving
-    parameters = tuple(contacts, cw, beta, sigma, p_sigma, epsilon,
-        rho, eta, omega, gamma_Ia, gamma_Is, gamma_H, nu, psi, t_vax)
+    switch = false
+    parameters = [contacts, cw, beta, sigma, p_sigma, epsilon,
+        rho, eta, omega, gamma_Ia, gamma_Is, gamma_H, nu, psi, t_vax,
+        switch]
 
     # prepare the timespan
     timespan = (0.0, time_end)
@@ -261,12 +254,11 @@ function epidemic_daedalus(;
         epidemic_daedalus_ode!, initial_state, timespan, parameters
     )
 
-    # cb = ContinuousCallback(condition, affect!)
+    cb = DiscreteCallback(condition, affect!)
 
     # get the solution
     # NOTE: not compatible with autodiff!
-    ode_solution = solve(ode_problem)
-    # callback = cb)
+    ode_solution = solve(ode_problem, callback = cb, tstops = [t_vax])
 
     return ode_solution
 end
