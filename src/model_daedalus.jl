@@ -1,6 +1,7 @@
 
 using OrdinaryDiffEq
 using LinearAlgebra
+using StaticArrays
 
 # copied from jameel-institute/daedalus
 function australia_demography()
@@ -38,7 +39,7 @@ function prepare_contacts(cm = australia_contacts())
     cm_x[1:4, 5:49] .= cm[:, 3]
     cm_x[5:49, 1:4] .= reshape(cm[3, :], 1, 4)
 
-    return cm_x
+    return SMatrix{49, 49}(cm_x)
 end
 
 # Function to prepare 49 element demography vector for I/N in FOI calculation
