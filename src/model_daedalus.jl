@@ -1,5 +1,5 @@
 
-using OrdinaryDiffEq
+using DifferentialEquations
 using LinearAlgebra
 using StaticArrays
 
@@ -89,12 +89,23 @@ function australia_initial_state(
     return init
 end
 
+function make_cond(threshold)::Function
+    function fn_cond(u, t, integrator)
+        H = @view u[:, 5, :]
+        total_hosp = sum(H)
+
+        total_hosp - threshold
+    end
+
+    return fn_cond
+end
+
 """
     condition(u, t, integrator)
 
 A condition function that triggers an event at a specific time.
 """
-function condition(u, t, integrator) # Event when condition(u,t,integrator) == 0
+function cond_vax(u, t, integrator) # Event when condition(u,t,integrator) == 0
     # trigger vaccination at t_vax, access by position
     t == integrator.p[15]
 end
@@ -104,8 +115,12 @@ end
 
 An event function.
 """
-function affect!(integrator)
+function start_vax!(integrator)
     integrator.p[16] = true # initial value is 0.0
+end
+
+function reduce_beta!(integrator)
+    integrator.p[3] *= 0.2
 end
 
 """
@@ -224,6 +239,7 @@ function epidemic_daedalus(;
         psi::Number = 1 / 270,
         t_vax::Number = 200.0,
         time_end::Number = 300.0,
+        threshold::Number = 1000.0,
         increment::Number = 1.0)
 
     # prepare transmission parameter beta as r0 / max(eigenvalue(contacts))
@@ -240,7 +256,8 @@ function epidemic_daedalus(;
     omega = [omega; repeat([omega[i_working_age]], econ_sectors)]
     gamma_H = [gamma_H; repeat([gamma_H[i_working_age]], econ_sectors)]
 
-    # combined parameters into a tuple: these cannot be modified during solving
+    # combined parameters into an array; this is not recommended but this cannot be a tuple
+    # using a StaticArray for the `contacts` helps cut computation as this is assigned only once(?)
     switch = false
     parameters = [contacts, cw, beta, sigma, p_sigma, epsilon,
         rho, eta, omega, gamma_Ia, gamma_Is, gamma_H, nu, psi, t_vax,
@@ -254,11 +271,14 @@ function epidemic_daedalus(;
         epidemic_daedalus_ode!, initial_state, timespan, parameters
     )
 
-    cb = DiscreteCallback(condition, affect!)
+    cond_beta = make_cond(threshold)
+    cb_vax = DiscreteCallback(cond_vax, start_vax!)
+    cb_npi = ContinuousCallback(cond_beta, reduce_beta!)
+
+    cb_set = CallbackSet(cb_vax, cb_npi)
 
     # get the solution
-    # NOTE: not compatible with autodiff!
-    ode_solution = solve(ode_problem, callback = cb, tstops = [t_vax])
+    ode_solution = solve(ode_problem, callback = cb_set, tstops = [t_vax])
 
     return ode_solution
 end
