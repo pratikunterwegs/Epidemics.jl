@@ -225,7 +225,7 @@ function epidemic_daedalus(;
         contacts = prepare_contacts(),
         cw = worker_contacts(),
         demography = prepare_demog(),
-        r0 = 1.3,
+        beta = 0.01, # manual beta
         sigma = 0.217,
         p_sigma = 0.867,
         epsilon = 0.58,
@@ -241,9 +241,6 @@ function epidemic_daedalus(;
         time_end::Number = 300.0,
         threshold::Number = 1000.0,
         increment::Number = 1.0)
-
-    # prepare transmission parameter beta as r0 / max(eigenvalue(contacts))
-    beta = 0.03
 
     # scale contacts by demography; divide col-wise
     contacts = contacts ./ demography
